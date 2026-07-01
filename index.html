@@ -158,6 +158,9 @@
   .h2h-meet .sc{font-variant-numeric:tabular-nums;font-weight:600}
   .h2h-meet .mvp-tag{margin-left:auto;font-size:11.5px;color:var(--muted)}
   .h2h-more{display:inline-block;margin-top:12px;font-size:13px}
+  .facts{list-style:none;margin:0;padding:0}
+  .facts li{padding:9px 0;border-top:1px solid var(--line);font-size:14px}
+  .facts li:first-child{border-top:none;padding-top:0}
   .empty{padding:18px;text-align:center;color:var(--muted);font-size:13.5px;border:1px dashed var(--line);border-radius:12px;background:var(--panel-2)}
   .back{display:inline-flex;align-items:center;gap:6px;font-size:13px;margin-bottom:6px}
 
@@ -185,7 +188,7 @@
       <p class="sub">GO Mammoth (London) · mixed 6-a-side touch rugby</p>
     </div>
     <div class="hero-right">
-      <select id="season" aria-label="Season"></select>
+      <div class="seg" id="season-seg" aria-label="Season"></div>
     </div>
   </header>
 
@@ -196,6 +199,7 @@
       <button data-nav="table">Table</button>
       <button data-nav="playoffs">Play-offs</button>
       <button data-nav="players">Players</button>
+      <button data-nav="stats">Stats</button>
     </div>
   </nav>
 
@@ -205,6 +209,7 @@
     <section data-view="table" hidden></section>
     <section data-view="playoffs" hidden></section>
     <section data-view="players" hidden></section>
+    <section data-view="stats" hidden></section>
     <section data-view="opponent" hidden></section>
   </main>
 
@@ -291,6 +296,15 @@ const TT = {
       { pos:5, team:"Touchdown Titans v2",     p:6, w:3, l:3, tf:33, ta:27, pts:12 },
       { pos:6, team:"Wandsworth Wasps",        p:6, w:1, l:5, tf:13, ta:45, pts:8 },
       { pos:7, team:"Touch This (TT)",         p:6, w:0, l:6, tf:16, ta:49, pts:6, tt:true }
+    ],
+    "2026-summer": [
+      { team:"Touch This (TT)",         p:0, w:0, l:0, tf:0, ta:0, pts:0, tt:true },
+      { team:"Touchdown Titans v2",     p:0, w:0, l:0, tf:0, ta:0, pts:0 },
+      { team:"Wandsworth Wasps",        p:0, w:0, l:0, tf:0, ta:0, pts:0 },
+      { team:"Tag Me If You Can",       p:0, w:0, l:0, tf:0, ta:0, pts:0 },
+      { team:"Sponsored by Churchills", p:0, w:0, l:0, tf:0, ta:0, pts:0 },
+      { team:"Touching Wands",          p:0, w:0, l:0, tf:0, ta:0, pts:0 },
+      { team:"Touch Me",                p:0, w:0, l:0, tf:0, ta:0, pts:0 }
     ]
   },
 
@@ -548,7 +562,8 @@ function barChart(items, nameFn, emptyMsg){
 }
 
 /* ---------- views ---------- */
-const cur = () => $('#season').value;
+let curSeason = '2026-summer';
+const cur = () => curSeason;
 
 function renderHome(){
   const sid = cur();
@@ -728,18 +743,29 @@ function renderTable(){
   const s=season(sid);
   const table = TT.standings && TT.standings[sid];
   if(table){
-    const rows = table.map(r=>`
+    const finished = s && s.status==='finished';
+    const rec = teamRecord(sid);
+    // Touch This row is always live from fixtures; rivals come from the seeded standings.
+    let data = table.map(r=> r.tt ? {...r, p:rec.played, w:rec.w, l:rec.l, tf:rec.tf, ta:rec.ta, pts:rec.pts} : {...r});
+    const hasPos = finished && data.every(r=>typeof r.pos==='number');
+    data.sort(hasPos ? (a,b)=>a.pos-b.pos
+                     : (a,b)=> b.pts-a.pts || (b.tf-b.ta)-(a.tf-a.ta) || b.tf-a.tf || a.team.localeCompare(b.team));
+    const anyPlayed = data.some(r=>r.p>0);
+    const rows = data.map((r,i)=>`
       <tr class="${r.tt?'hl':''}">
-        <td class="num">${r.pos}</td>
+        <td class="num">${finished ? (r.pos||i+1) : (anyPlayed ? i+1 : '–')}</td>
         <td>${r.tt?`<strong>${esc(r.team)}</strong>`:esc(r.team)}</td>
         <td class="num">${r.p}</td><td class="num">${r.w}</td><td class="num">${r.l}</td>
         <td class="num">${r.tf}</td><td class="num">${r.ta}</td>
         <td class="num">${(r.tf-r.ta>0?'+':'')+(r.tf-r.ta)}</td>
         <td class="num"><strong>${r.pts}</strong></td>
       </tr>`).join('');
+    const caption = finished
+      ? `Final regular-season standings. Touch This finished ${ordinal(s.finalPosition)} of ${data.length}${s.finalPlacing?`, then ${ordinal(s.finalPlacing)} overall after the play-offs`:''}.`
+      : `All ${data.length} teams in the division. The Touch This row updates automatically from results; rivals' records fill in as the league table is shared.`;
     host.innerHTML = `
       <h2 class="section-t">League table &mdash; ${esc(s.name)}</h2>
-      <p class="section-s">Final regular-season standings. Touch This finished ${ordinal(s.finalPosition)} of ${table.length}${s.finalPlacing?`, then ${ordinal(s.finalPlacing)} overall after the play-offs`:''}.</p>
+      <p class="section-s">${caption}</p>
       <div class="tablewrap"><table>
         <thead><tr><th class="num">Pos</th><th>Team</th><th class="num">P</th><th class="num">W</th><th class="num">L</th><th class="num">TF</th><th class="num">TA</th><th class="num">Diff</th><th class="num">Pts</th></tr></thead>
         <tbody>${rows}</tbody>
@@ -833,6 +859,50 @@ function renderPlayers(){
     <div class="roster">${roster}</div>`;
 }
 
+function renderStats(){
+  const host=$('[data-view="stats"]');
+  const games = TT.fixtures.filter(f=>f.played && f.competition!=='bye' && f.ttScore!=null && f.oppScore!=null);
+  let w=0,l=0,d=0,tf=0,ta=0;
+  games.forEach(f=>{ const r=fxResult(f); if(r==='W')w++; else if(r==='L')l++; else if(r==='D')d++; tf+=f.ttScore; ta+=f.oppScore; });
+  const gp=games.length, winPct=gp?Math.round(w/gp*100):0;
+  const scorers=tallyScorers('all'), mvps=tallyMvp('all'), unatt=totalUnattributed('all');
+  const bestAttack = games.slice().sort((a,b)=> b.ttScore-a.ttScore || (b.ttScore-b.oppScore)-(a.ttScore-a.oppScore))[0];
+  const heaviest  = games.slice().sort((a,b)=> (a.ttScore-a.oppScore)-(b.ttScore-b.oppScore))[0];
+  const narrowest = games.filter(f=>fxResult(f)==='L').sort((a,b)=> (a.oppScore-a.ttScore)-(b.oppScore-b.ttScore))[0];
+  const kpis=[
+    ['Games played',gp],['Record (W-L)',`${w}–${l}`],['Win rate',winPct+'%'],
+    ['Tries scored',tf],['Tries conceded',ta],['Avg margin', gp?((tf-ta)/gp>0?'+':'')+((tf-ta)/gp).toFixed(1):'–']
+  ].map(([lab,v])=>`<div class="kpi"><div class="v">${v}</div><div class="l">${lab}</div></div>`).join('');
+  const recCard=(title,f,extra)=> f
+    ? `<div class="card"><h3>${title}</h3>
+        <div class="statline"><div class="s"><div class="sv">${f.ttScore}–${f.oppScore}</div><div class="sl">${resBadge(fxResult(f))} vs ${esc(oppName(f.opponent))}</div></div></div>
+        <p class="muted" style="margin:2px 0 0;font-size:12.5px">${fmtDate(f.date)}${extra?' · '+extra:''}</p></div>`
+    : `<div class="card"><h3>${title}</h3><div class="empty">No games yet.</div></div>`;
+  host.innerHTML = `
+    <h2 class="section-t">Club stats &mdash; all time</h2>
+    <p class="section-s">Across every game played so far, both seasons and the play-offs.</p>
+    <div class="kpis">${kpis}</div>
+    <h2 class="section-t">Records</h2>
+    <div class="grid g3">
+      ${recCard('Best attacking game', bestAttack, bestAttack?bestAttack.ttScore+' tries scored':'')}
+      ${recCard('Narrowest defeat', narrowest, narrowest?'lost by '+(narrowest.oppScore-narrowest.ttScore):'')}
+      ${recCard('Heaviest defeat', heaviest, heaviest?'lost by '+(heaviest.oppScore-heaviest.ttScore):'')}
+    </div>
+    <h2 class="section-t">All-time leaderboards</h2>
+    <div class="grid g2">
+      <div class="card"><h3>Top try scorers</h3>${barChart(scorers,i=>playerName(i.id),'No try scorers yet.')}${unatt?`<p class="muted" style="margin:11px 0 0;font-size:12.5px">Plus ${unatt} unattributed tries.</p>`:''}</div>
+      <div class="card"><h3>Most MVP awards</h3>${barChart(mvps,i=>playerName(i.id),'No MVPs yet.')}</div>
+    </div>
+    <h2 class="section-t">By the numbers</h2>
+    <div class="card"><ul class="facts">
+      <li><strong>${gp}</strong> games played &mdash; ${w} won, ${l} lost</li>
+      <li><strong>${tf}</strong> tries scored, <strong>${ta}</strong> conceded (${(tf-ta)>0?'+':''}${tf-ta} difference)</li>
+      <li><strong>${scorers.length}</strong> different try scorers, <strong>${mvps.length}</strong> different MVP winners</li>
+      <li><strong>${TT.players.length}</strong> players turned out across the club</li>
+      <li>Leading scorer: <strong>${scorers.length?esc(playerName(scorers[0].id))+' ('+scorers[0].n+' tries)':'—'}</strong></li>
+    </ul></div>`;
+}
+
 function renderOpponent(id){
   const host=$('[data-view="opponent"]'); const o=opp(id);
   if(!o){ host.innerHTML=`<a class="back" href="#fixtures">&larr; Back</a><div class="empty">Unknown opponent.</div>`; return; }
@@ -873,8 +943,8 @@ function renderOpponent(id){
 }
 
 /* ---------- router + boot ---------- */
-const VIEWS=['home','fixtures','table','playoffs','players'];
-function renderAll(){ renderHome(); renderFixtures(); renderTable(); renderPlayoffs(); renderPlayers(); }
+const VIEWS=['home','fixtures','table','playoffs','players','stats'];
+function renderAll(){ renderHome(); renderFixtures(); renderTable(); renderPlayoffs(); renderPlayers(); renderStats(); }
 function route(){
   const [view,arg]=(location.hash.replace(/^#/,'')||'home').split('/');
   const v = view==='opponent' ? 'opponent' : (VIEWS.includes(view)?view:'home');
@@ -887,12 +957,13 @@ function route(){
 function boot(){
   // crest
   $('#crest').innerHTML=crestSVG();
-  // season selector
-  const sel=$('#season');
-  sel.innerHTML = TT.seasons.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('')+'<option value="all">All seasons</option>';
-  const active = TT.seasons.filter(s=>s.status==='active')[0];
-  sel.value = active ? active.id : TT.seasons[0].id;
-  sel.addEventListener('change',()=>{ renderAll(); route(); });
+  // season toggle
+  curSeason = (TT.seasons.find(s=>s.status==='active')||TT.seasons[0]).id;
+  const sseg=$('#season-seg');
+  sseg.innerHTML = TT.seasons.map(s=>`<button data-season="${s.id}">${esc(s.name.replace(/\s*20\d\d/,''))}</button>`).join('');
+  const syncSeason=()=>$$('#season-seg button').forEach(b=>b.classList.toggle('active', b.dataset.season===curSeason));
+  $$('#season-seg button').forEach(b=>b.addEventListener('click',()=>{ curSeason=b.dataset.season; syncSeason(); renderAll(); route(); }));
+  syncSeason();
   // nav
   $$('#seg button').forEach(b=>b.addEventListener('click',()=>{ location.hash='#'+b.dataset.nav; }));
 
