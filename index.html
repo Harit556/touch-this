@@ -213,7 +213,6 @@
     <div class="crest" id="crest"></div>
     <div>
       <h1>Touch This</h1>
-      <p class="sub">GO Mammoth (London) · mixed 6-a-side touch rugby</p>
     </div>
     <div class="hero-right">
       <div class="seg" id="season-seg" aria-label="Season"></div>
@@ -655,12 +654,6 @@ function renderHome(){
     : 'No games recorded for this season yet.';
 
   $('[data-view="home"]').innerHTML = `
-    <div class="card hero-card">
-      <div class="wm">${crestSVG()}</div>
-      <p class="lead">${esc(s?s.name:'All seasons')}${s&&s.status?` · ${s.status}`:''}</p>
-      <p class="big">${standing}</p>
-      <p class="story">${esc(s?s.summary:'')}</p>
-    </div>
     ${nextCard}
     ${h2hCard}
     <div class="kpis mt">${kpis}</div>
@@ -931,7 +924,6 @@ function renderPlayers(){
       <span class="avatar">${esc(initials(p.name))}</span>
       <div style="min-width:0">
         <div class="pn">${esc(p.name)}${p.nickname?` <span class="muted">(${esc(p.nickname)})</span>`:''} ${p.type?`<span class="ptype ${esc(p.type)}">${esc(typeLabel[p.type]||p.type)}</span>`:''}</div>
-        <div class="pr">${esc(p.role)}</div>
         ${stat?`<div class="pstat">${stat}</div>`:''}
       </div>
     </div>`;
@@ -1023,17 +1015,48 @@ function renderOpponent(id){
       <p class="story">${h.upcoming[0].competition==='playoff'?'Play-off. ':''}${esc(season(h.upcoming[0].season).name)}${h.upcoming[0].week?', week '+h.upcoming[0].week:''}${h.upcoming[0].venue?' · '+esc(h.upcoming[0].venue):''}.</p>
     </div>` : '';
 
+  // Their full Early Summer league record + play-off run (from the official standings)
+  const table = TT.standings['2026-spring']||[];
+  const st = table.find(r=>r.team===o.name);
+  let recordSection='';
+  if(st){
+    const maxTF=Math.max(...table.map(r=>r.tf)), minTA=Math.min(...table.map(r=>r.ta));
+    const scout=[];
+    if(st.tf===maxTF) scout.push(`Top attack in the division (${st.tf} tries).`);
+    if(st.ta===minTA) scout.push(`Meanest defence in the division (${st.ta} conceded).`);
+    scout.push(`Averaged ${(st.tf/st.p).toFixed(1)} tries for and ${(st.ta/st.p).toFixed(1)} against per game, a difference of ${st.tf-st.ta>0?'+':''}${st.tf-st.ta}.`);
+    const rec=[
+      ['League finish', ordinal(st.pos)],
+      ['Record (W-L)', `${st.w}–${st.l}`],
+      ['Tries for', st.tf],
+      ['Tries against', st.ta],
+      ['Points', st.pts]
+    ].map(([l,v])=>`<div class="kpi"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+    const po=(TT.playoffs['2026-spring']||[]).filter(g=>g.t1===o.name||g.t2===o.name).map(g=>{
+      const them=g.t1===o.name, us=them?g.s1:g.s2, opp2=them?g.s2:g.s1, other=them?g.t2:g.t1;
+      return `<strong>${esc(g.stage)}</strong> &mdash; ${us>opp2?'beat':'lost to'} ${esc(other)} ${us} to ${opp2}`;
+    });
+    recordSection=`
+      <h2 class="section-t">Their Early Summer 2026</h2>
+      <p class="section-s">Full league record and how they fared in the knockouts.</p>
+      <div class="kpis" style="grid-template-columns:repeat(5,1fr)">${rec}</div>
+      <p class="ko-cap">${scout.join(' ')}</p>
+      ${po.length?`<div class="card mt"><h3>Their play-off run</h3><ul class="facts">${po.map(l=>`<li>${l}</li>`).join('')}</ul></div>`:''}`;
+  }
+
   host.innerHTML = `
     <a class="back" href="#fixtures">&larr; All fixtures</a>
     <h2 class="section-t">${esc(o.name)}</h2>
-    <p class="section-s">${o.finish?`Finished ${ordinal(o.finish)} in Early Summer 2026. `:''}${o.notes?esc(o.notes):'Head-to-head record and previous meetings.'}</p>
+    <p class="section-s">${o.notes?esc(o.notes):'Head-to-head record and previous meetings.'}</p>
+    <h2 class="section-t">Head-to-head vs Touch This</h2>
     <div class="kpis" style="grid-template-columns:repeat(4,1fr)">${kpis}</div>
     ${up}
     <h2 class="section-t">Previous meetings</h2>
     <div class="tablewrap"><table>
       <thead><tr><th>Date</th><th>Comp</th><th class="num">Score</th><th class="num">Res</th><th>Try scorers</th><th>MVP</th></tr></thead>
       <tbody>${meetings}</tbody>
-    </table></div>`;
+    </table></div>
+    ${recordSection}`;
 }
 
 /* ---------- router + boot ---------- */
