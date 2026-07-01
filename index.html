@@ -243,12 +243,18 @@ const TT = {
       notes:"Inflicted TT's heaviest defeat of Season 1 (0 to 11)." },
     { id:"scoregasms", name:"Scoregasms", colours:null,
       notes:"TT scored their first try of the season in this game." },
-    { id:"churchills", name:"Churchills", colours:null,
-      notes:"Had the league's tightest defence in Season 1." },
+    { id:"churchills", name:"Sponsored by Churchills", colours:null,
+      notes:"Had the league's tightest defence in Season 1 (lost 2 to 9). Rematch in Season 2 on 22 Jul." },
     { id:"wandsworth-wasps", name:"Wandsworth Wasps", colours:null,
       notes:"27 May shootout for 6th place. Wasps finished 7th overall after a 150 to 2 play-off semi-final loss to Touchdown Titans, which locked TT above them." },
     { id:"try-hard-2", name:"Try Hard 2", colours:null,
-      notes:"Finished 2nd. TT's best display of the season came here: lost just 7 to 8." }
+      notes:"Finished 2nd. TT's best display of the season came here: lost just 7 to 8." },
+    { id:"tag-me-if-you-can", name:"Tag Me If You Can", colours:null,
+      notes:"New Season 2 opponent. First meeting on 15 Jul." },
+    { id:"touching-wands", name:"Touching Wands", colours:null,
+      notes:"New Season 2 opponent. First meeting on 29 Jul." },
+    { id:"touch-me", name:"Touch Me", colours:null,
+      notes:"New Season 2 opponent. First meeting on 12 Aug." }
   ],
 
   seasons: [
@@ -286,25 +292,32 @@ const TT = {
       ttScore:null, oppScore:null, result:null, scorers:null, mvp:null, lineup:null,
       notes:"5th-place play-off against the season's very first opponent. Win = 5th, loss = 6th. Result not recorded yet." },
 
-    // ---- Season 2 (2026 Summer) — upcoming (fill in as fixtures are confirmed) ----
-    { id:"s2-w1", season:"2026-summer", week:1, date:null, competition:"league",
-      opponent:null, venue:null, played:false, ttScore:null, oppScore:null, result:null,
-      scorers:null, mvp:null, lineup:null, notes:"Season 2 opener — tell Claude the date + opponent." },
-    { id:"s2-w2", season:"2026-summer", week:2, date:null, competition:"league",
-      opponent:null, venue:null, played:false, ttScore:null, oppScore:null, result:null,
-      scorers:null, mvp:null, lineup:null, notes:null },
-    { id:"s2-w3", season:"2026-summer", week:3, date:null, competition:"league",
-      opponent:null, venue:null, played:false, ttScore:null, oppScore:null, result:null,
-      scorers:null, mvp:null, lineup:null, notes:null },
-    { id:"s2-w4", season:"2026-summer", week:4, date:null, competition:"league",
-      opponent:null, venue:null, played:false, ttScore:null, oppScore:null, result:null,
-      scorers:null, mvp:null, lineup:null, notes:null },
-    { id:"s2-w5", season:"2026-summer", week:5, date:null, competition:"league",
-      opponent:null, venue:null, played:false, ttScore:null, oppScore:null, result:null,
-      scorers:null, mvp:null, lineup:null, notes:null },
-    { id:"s2-w6", season:"2026-summer", week:6, date:null, competition:"league",
-      opponent:null, venue:null, played:false, ttScore:null, oppScore:null, result:null,
-      scorers:null, mvp:null, lineup:null, notes:null }
+    // ---- Season 2 (2026 Summer) — GO Mammoth summer league, Clapham Wandsworth, Pitch 2 (Touch) ----
+    { id:"s2-w1", season:"2026-summer", week:1, date:"2026-07-01", time:"19:50", competition:"league",
+      opponent:"touchdown-titans", venue:"Clapham Wandsworth, Pitch 2", played:false,
+      ttScore:null, oppScore:null, result:null, scorers:null, mvp:null, lineup:null,
+      notes:"Season 2 opener. Third meeting with the Titans." },
+    { id:"s2-w2", season:"2026-summer", week:2, date:"2026-07-08", time:"19:50", competition:"league",
+      opponent:"wandsworth-wasps", venue:"Clapham Wandsworth, Pitch 2", played:false,
+      ttScore:null, oppScore:null, result:null, scorers:null, mvp:null, lineup:null, notes:null },
+    { id:"s2-w3", season:"2026-summer", week:3, date:"2026-07-15", time:"19:10", competition:"league",
+      opponent:"tag-me-if-you-can", venue:"Clapham Wandsworth, Pitch 2", played:false,
+      ttScore:null, oppScore:null, result:null, scorers:null, mvp:null, lineup:null, notes:null },
+    { id:"s2-w4", season:"2026-summer", week:4, date:"2026-07-22", time:"19:10", competition:"league",
+      opponent:"churchills", venue:"Clapham Wandsworth, Pitch 2", played:false,
+      ttScore:null, oppScore:null, result:null, scorers:null, mvp:null, lineup:null, notes:null },
+    { id:"s2-w5", season:"2026-summer", week:5, date:"2026-07-29", time:"18:30", competition:"league",
+      opponent:"touching-wands", venue:"Clapham Wandsworth, Pitch 2", played:false,
+      ttScore:null, oppScore:null, result:null, scorers:null, mvp:null, lineup:null, notes:null },
+    { id:"s2-w6", season:"2026-summer", week:6, date:"2026-08-12", time:"19:10", competition:"league",
+      opponent:"touch-me", venue:"Clapham Wandsworth, Pitch 2", played:false,
+      ttScore:null, oppScore:null, result:null, scorers:null, mvp:null, lineup:null,
+      notes:"No TT fixture shown on 5 Aug (likely a bye week) — to confirm." },
+    // ---- Season 2 play-offs (potential, 19 Aug) ----
+    { id:"s2-po", season:"2026-summer", week:null, date:"2026-08-19", time:null, competition:"playoff",
+      playoffRound:"Semi-final (potential)", opponent:null, venue:"Clapham Wandsworth", played:false,
+      ttScore:null, oppScore:null, result:null, scorers:null, mvp:null, lineup:null,
+      notes:"Potential play-off semi-final; opponent and slot depend on where TT finishes. Slots 18:30 / 19:10 / 19:50." }
   ]
 };
 /* ====== /DATA ====== */
@@ -496,7 +509,7 @@ function renderHome(){
         <div>
           <div class="vs">Next up</div>
           <div class="opp">${nf.opponent? esc(oppName(nf.opponent)) : 'Opponent TBC'}</div>
-          <div class="meta">${nf.competition==='playoff'?'Play-off · ':''}${fmtDate(nf.date)}${nf.season==='2026-summer'?' · Season 2, week '+nf.week:''}</div>
+          <div class="meta">${nf.competition==='playoff'?'Play-off · ':''}${fmtDate(nf.date)}${nf.time?' at '+esc(nf.time):''}${nf.venue?' · '+esc(nf.venue):''}${nf.season==='2026-summer'&&nf.week?' · Season 2, week '+nf.week:''}</div>
         </div>
         ${nf.opponent? `<a class="cta" href="#opponent/${nf.opponent}">View head-to-head &rarr;</a>`
                      : `<span class="cta muted">Tell Claude the date &amp; opponent to fill this in</span>`}
@@ -547,7 +560,7 @@ function renderFixtures(){
 
   const body = rows.map(f=>`
     <tr class="${f.opponent?'clickable':''}" ${f.opponent?`onclick="location.hash='#opponent/${f.opponent}'"`:''}>
-      <td>${fmtDate(f.date)}</td>
+      <td>${fmtDate(f.date)}${f.time?`<div class="muted" style="font-size:12px">${esc(f.time)}</div>`:''}</td>
       <td class="muted">${esc(season(f.season)?.name||f.season)}</td>
       <td>${compPill(f)}</td>
       <td>${oppLink(f.opponent)}</td>
@@ -713,8 +726,8 @@ function renderOpponent(id){
     <div class="card hero-card mt">
       <div class="wm">${crestSVG()}</div>
       <p class="lead">Next meeting</p>
-      <p class="big">${fmtDate(h.upcoming[0].date)}</p>
-      <p class="story">${h.upcoming[0].competition==='playoff'?'Play-off. ':''}Season ${h.upcoming[0].season==='2026-summer'?'2':'1'}, week ${h.upcoming[0].week||'&ndash;'}.</p>
+      <p class="big">${fmtDate(h.upcoming[0].date)}${h.upcoming[0].time?' · '+esc(h.upcoming[0].time):''}</p>
+      <p class="story">${h.upcoming[0].competition==='playoff'?'Play-off. ':''}Season ${h.upcoming[0].season==='2026-summer'?'2':'1'}, week ${h.upcoming[0].week||'&ndash;'}${h.upcoming[0].venue?' · '+esc(h.upcoming[0].venue):''}.</p>
     </div>` : '';
 
   host.innerHTML = `
