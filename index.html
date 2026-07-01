@@ -352,6 +352,40 @@ const TT = {
     "2026-spring": ["Scoregasms","Sponsored by Churchills","Try Hard 2: Try Harder","The Dirty Dogs","Touchdown Titans v2","Touch This (TT)","Wandsworth Wasps"]
   },
 
+  // Full round-by-round results for every team (official grid). Used to derive each side's season.
+  results: {
+    "2026-spring": [
+      { date:"2026-04-22", bye:"The Dirty Dogs", games:[
+        {a:"Wandsworth Wasps",as:4,b:"Sponsored by Churchills",bs:10},
+        {a:"Touch This (TT)",as:3,b:"Touchdown Titans v2",bs:7},
+        {a:"Try Hard 2: Try Harder",as:6,b:"Scoregasms",bs:3} ]},
+      { date:"2026-04-29", bye:"Touch This (TT)", games:[
+        {a:"Try Hard 2: Try Harder",as:2,b:"Sponsored by Churchills",bs:4},
+        {a:"Scoregasms",as:6,b:"Touchdown Titans v2",bs:4},
+        {a:"The Dirty Dogs",as:8,b:"Wandsworth Wasps",bs:2} ]},
+      { date:"2026-05-06", bye:"Scoregasms", games:[
+        {a:"The Dirty Dogs",as:11,b:"Touch This (TT)",bs:0},
+        {a:"Try Hard 2: Try Harder",as:9,b:"Wandsworth Wasps",bs:0},
+        {a:"Touchdown Titans v2",as:4,b:"Sponsored by Churchills",bs:5} ]},
+      { date:"2026-05-13", bye:"Sponsored by Churchills", games:[
+        {a:"Scoregasms",as:9,b:"Touch This (TT)",bs:1},
+        {a:"The Dirty Dogs",as:3,b:"Try Hard 2: Try Harder",bs:9},
+        {a:"Touchdown Titans v2",as:8,b:"Wandsworth Wasps",bs:2} ]},
+      { date:"2026-05-20", bye:"Wandsworth Wasps", games:[
+        {a:"Touchdown Titans v2",as:8,b:"Try Hard 2: Try Harder",bs:7},
+        {a:"Sponsored by Churchills",as:9,b:"Touch This (TT)",bs:2},
+        {a:"The Dirty Dogs",as:4,b:"Scoregasms",bs:8} ]},
+      { date:"2026-05-27", bye:"Try Hard 2: Try Harder", games:[
+        {a:"Sponsored by Churchills",as:2,b:"Scoregasms",bs:3},
+        {a:"The Dirty Dogs",as:4,b:"Touchdown Titans v2",bs:2},
+        {a:"Wandsworth Wasps",as:5,b:"Touch This (TT)",bs:3} ]},
+      { date:"2026-06-03", bye:"Touchdown Titans v2", games:[
+        {a:"Wandsworth Wasps",as:0,b:"Scoregasms",bs:7},
+        {a:"Touch This (TT)",as:7,b:"Try Hard 2: Try Harder",bs:8},
+        {a:"The Dirty Dogs",as:6,b:"Sponsored by Churchills",bs:4} ]}
+    ]
+  },
+
   fixtures: [
     // ---- Early Summer 2026 (season 1) — regular season ----
     { id:"s1-w1", season:"2026-spring", week:1, date:"2026-04-22", time:"19:10", competition:"league",
@@ -979,6 +1013,18 @@ function renderStats(){
     </ul></div>`;
 }
 
+function teamSeasonResults(name, sid){
+  const rounds=(TT.results&&TT.results[sid])||[];
+  const out=[];
+  rounds.forEach(r=>{
+    if(r.bye===name){ out.push({date:r.date,bye:true}); return; }
+    const g=r.games.find(x=>x.a===name||x.b===name);
+    if(!g) return;
+    const home=g.a===name, gf=home?g.as:g.bs, ga=home?g.bs:g.as, opp=home?g.b:g.a;
+    out.push({date:r.date,opp,gf,ga,res:gf>ga?'W':gf<ga?'L':'D'});
+  });
+  return out;
+}
 function renderOpponent(id){
   const host=$('[data-view="opponent"]'); const o=opp(id);
   if(!o){ host.innerHTML=`<a class="back" href="#fixtures">&larr; Back</a><div class="empty">Unknown opponent.</div>`; return; }
@@ -1005,16 +1051,22 @@ function renderOpponent(id){
       <p class="story">${h.upcoming[0].competition==='playoff'?'Play-off. ':''}${esc(season(h.upcoming[0].season).name)}${h.upcoming[0].week?', week '+h.upcoming[0].week:''}${h.upcoming[0].venue?' · '+esc(h.upcoming[0].venue):''}.</p>
     </div>` : '';
 
-  // Their full Early Summer league record + play-off run (from the official standings)
+  // Their full Early Summer league record, week-by-week results + play-off run (official grid)
   const table = TT.standings['2026-spring']||[];
   const st = table.find(r=>r.team===o.name);
   let recordSection='';
   if(st){
     const maxTF=Math.max(...table.map(r=>r.tf)), minTA=Math.min(...table.map(r=>r.ta));
+    const results = teamSeasonResults(o.name,'2026-spring');
+    const played = results.filter(x=>!x.bye);
+    const bigWin = played.filter(x=>x.res==='W').sort((a,b)=>(b.gf-b.ga)-(a.gf-a.ga))[0];
+    const bigLoss = played.filter(x=>x.res==='L').sort((a,b)=>(a.gf-a.ga)-(b.gf-b.ga))[0];
     const scout=[];
     if(st.tf===maxTF) scout.push(`Top attack in the division (${st.tf} tries).`);
     if(st.ta===minTA) scout.push(`Meanest defence in the division (${st.ta} conceded).`);
-    scout.push(`Averaged ${(st.tf/st.p).toFixed(1)} tries for and ${(st.ta/st.p).toFixed(1)} against per game, a difference of ${st.tf-st.ta>0?'+':''}${st.tf-st.ta}.`);
+    scout.push(`Averaged ${(st.tf/st.p).toFixed(1)} for and ${(st.ta/st.p).toFixed(1)} against per game.`);
+    if(bigWin) scout.push(`Biggest win ${bigWin.gf} to ${bigWin.ga} over ${esc(bigWin.opp)}.`);
+    if(bigLoss) scout.push(`Heaviest loss ${bigLoss.gf} to ${bigLoss.ga} to ${esc(bigLoss.opp)}.`);
     const rec=[
       ['League finish', ordinal(st.pos)],
       ['Record (W-L)', `${st.w}–${st.l}`],
@@ -1022,15 +1074,28 @@ function renderOpponent(id){
       ['Tries against', st.ta],
       ['Points', st.pts]
     ].map(([l,v])=>`<div class="kpi"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+    const formChips = played.map(x=>`<span class="chip ${x.res.toLowerCase()}">${x.res}</span>`).join('');
+    const resRows = results.map(x=> x.bye
+      ? `<tr><td>${fmtDate(x.date)}</td><td class="muted" colspan="3">Bye week</td></tr>`
+      : `<tr class="${/Touch This/.test(x.opp)?'hl':''}"><td>${fmtDate(x.date)}</td><td>${esc(x.opp)}</td><td class="num">${x.gf}&ndash;${x.ga}</td><td class="num">${resBadge(x.res)}</td></tr>`
+    ).join('');
     const po=(TT.playoffs['2026-spring']||[]).filter(g=>g.t1===o.name||g.t2===o.name).map(g=>{
       const them=g.t1===o.name, us=them?g.s1:g.s2, opp2=them?g.s2:g.s1, other=them?g.t2:g.t1;
       return `<strong>${esc(g.stage)}</strong> &mdash; ${us>opp2?'beat':'lost to'} ${esc(other)} ${us} to ${opp2}`;
     });
     recordSection=`
       <h2 class="section-t">Their Early Summer 2026</h2>
-      <p class="section-s">Full league record and how they fared in the knockouts.</p>
+      <p class="section-s">Full league record, week by week, and how they fared in the knockouts.</p>
       <div class="kpis" style="grid-template-columns:repeat(5,1fr)">${rec}</div>
       <p class="ko-cap">${scout.join(' ')}</p>
+      <div class="card mt">
+        <h3>Their league season</h3>
+        <div class="form" style="margin:2px 0 14px">${formChips}</div>
+        <div class="tablewrap"><table>
+          <thead><tr><th>Date</th><th>Opponent</th><th class="num">Score</th><th class="num">Res</th></tr></thead>
+          <tbody>${resRows}</tbody>
+        </table></div>
+      </div>
       ${po.length?`<div class="card mt"><h3>Their play-off run</h3><ul class="facts">${po.map(l=>`<li>${l}</li>`).join('')}</ul></div>`:''}`;
   }
 
