@@ -924,34 +924,15 @@ function appsChart(){
 function renderPlayers(){
   const host=$('[data-view="players"]'); const sid=cur();
   const scorers=tallyScorers(sid), mvps=tallyMvp(sid), unatt=totalUnattributed(sid);
-  const typeLabel={core:'Core',squad:'Squad',regular:'Regular',ringer:'Ringer'};
-  const triesMap={}; tallyScorers('all').forEach(x=>triesMap[x.id]=x.n);
-  const roster = TT.players.map(p=>{
-    const t=triesMap[p.id]||0;
-    const stat = t?`${t} ${t===1?'try':'tries'}`:'';
-    return `
-    <div class="pcard">
-      <span class="avatar">${esc(initials(p.name))}</span>
-      <div style="min-width:0">
-        <div class="pn">${esc(p.name)}${p.nickname?` <span class="muted">(${esc(p.nickname)})</span>`:''} ${p.type?`<span class="ptype ${esc(p.type)}">${esc(typeLabel[p.type]||p.type)}</span>`:''}</div>
-        ${stat?`<div class="pstat">${stat}</div>`:''}
-      </div>
-    </div>`;
-  }).join('');
   host.innerHTML = `
-    <h2 class="section-t">Players &amp; stats</h2>
+    <h2 class="section-t">Players</h2>
     <p class="section-s">Leaderboards for ${esc(sid==='all'?'all seasons':season(sid)?.name)}. One try equals one point in this league, so tries are the scoring stat.</p>
-    <div class="grid g3">
+    <div class="grid g2">
       <div class="card"><h3>Top try scorers</h3>${barChart(scorers,i=>playerName(i.id),'No try scorers logged yet.')}
         ${unatt?`<p class="muted" style="margin:11px 0 0;font-size:12.5px">Plus ${unatt} ${unatt===1?'try':'tries'} scored but never attributed to a named player.</p>`:''}</div>
       <div class="card"><h3>MVP awards</h3>${barChart(mvps,i=>playerName(i.id),'No MVPs logged yet.')}
         ${mvps.length?'<p class="muted" style="margin:11px 0 0;font-size:12.5px">A different player won it every week.</p>':''}</div>
-      <div class="card"><h3>Appearances</h3>${sid==='2026-spring'?appsChart():'<div class="empty">No appearances logged for this season yet.</div>'}
-        ${sid==='2026-spring'?'<p class="muted" style="margin:11px 0 0;font-size:12.5px">Confirmed appearances; &ldquo;+&rdquo; marks a minimum, as some core players have unconfirmed weeks.</p>':''}</div>
-    </div>
-    <h2 class="section-t">Squad</h2>
-    <p class="section-s">The ${TT.players.length} players who turned out: core regulars, squad players, and the subs and ringers who filled in.</p>
-    <div class="roster">${roster}</div>`;
+    </div>`;
 }
 
 function renderStats(){
@@ -984,10 +965,9 @@ function renderStats(){
       ${recCard('Heaviest defeat', heaviest, heaviest?'lost by '+(heaviest.oppScore-heaviest.ttScore):'')}
     </div>
     <h2 class="section-t">All-time leaderboards</h2>
-    <div class="grid g3">
+    <div class="grid g2">
       <div class="card"><h3>Top try scorers</h3>${barChart(scorers,i=>playerName(i.id),'No try scorers yet.')}${unatt?`<p class="muted" style="margin:11px 0 0;font-size:12.5px">Plus ${unatt} unattributed tries.</p>`:''}</div>
       <div class="card"><h3>Most MVP awards</h3>${barChart(mvps,i=>playerName(i.id),'No MVPs yet.')}</div>
-      <div class="card"><h3>Appearances</h3>${appsChart()}<p class="muted" style="margin:11px 0 0;font-size:12.5px">&ldquo;+&rdquo; marks a confirmed minimum.</p></div>
     </div>
     <h2 class="section-t">By the numbers</h2>
     <div class="card"><ul class="facts">
