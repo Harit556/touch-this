@@ -76,10 +76,10 @@
   .kpi .l{font-size:11.5px;color:var(--muted);margin-top:3px;line-height:1.3}
 
   /* Hero standing strip */
-  .hero-card{background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 12%,var(--panel)),var(--panel));
+  .hero-card{background:color-mix(in srgb,var(--accent) 5%,var(--panel));
     border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow);
-    position:relative;overflow:hidden;margin-top:18px}
-  .hero-card .wm{position:absolute;right:-14px;bottom:-24px;width:150px;height:165px;opacity:.06;pointer-events:none}
+    margin-top:18px}
+  .hero-card .wm{display:none}
   .hero-card .lead{font-size:14px;color:var(--muted);margin:0 0 6px}
   .hero-card .big{font-size:22px;font-weight:660;margin:0}
   .hero-card .story{margin:10px 0 0;max-width:640px;font-size:13.5px;color:var(--ink)}
@@ -175,7 +175,6 @@
     <div class="crest" id="crest"></div>
     <div>
       <h1>Touch This</h1>
-      <p class="motto">Tango ergo sum</p>
       <p class="sub">GO Mammoth (London) · mixed 6-a-side touch rugby</p>
     </div>
     <div class="hero-right">
@@ -238,30 +237,30 @@ const TT = {
 
   opponents: [
     { id:"touchdown-titans", name:"Touchdown Titans", colours:null,
-      notes:"TT's first-ever opponent (Week 1, 22 Apr) and the Season 1 5th-place play-off opponent." },
+      notes:"TT's first-ever opponent (Week 1, 22 Apr) and the Early Summer 5th-place play-off opponent." },
     { id:"dirty-dogs", name:"Dirty Dogs", colours:null,
-      notes:"Inflicted TT's heaviest defeat of Season 1 (0 to 11)." },
+      notes:"Inflicted TT's heaviest defeat of the Early Summer season (0 to 11)." },
     { id:"scoregasms", name:"Scoregasms", colours:null,
       notes:"TT scored their first try of the season in this game." },
     { id:"churchills", name:"Sponsored by Churchills", colours:null,
-      notes:"Had the league's tightest defence in Season 1 (lost 2 to 9). Rematch in Season 2 on 22 Jul." },
+      notes:"Had the league's tightest defence in the Early Summer season (lost 2 to 9). Rematch in Late Summer on 22 Jul." },
     { id:"wandsworth-wasps", name:"Wandsworth Wasps", colours:null,
       notes:"27 May shootout for 6th place. Wasps finished 7th overall after a 150 to 2 play-off semi-final loss to Touchdown Titans, which locked TT above them." },
     { id:"try-hard-2", name:"Try Hard 2", colours:null,
       notes:"Finished 2nd. TT's best display of the season came here: lost just 7 to 8." },
     { id:"tag-me-if-you-can", name:"Tag Me If You Can", colours:null,
-      notes:"New Season 2 opponent. First meeting on 15 Jul." },
+      notes:"New Late Summer opponent. First meeting on 15 Jul." },
     { id:"touching-wands", name:"Touching Wands", colours:null,
-      notes:"New Season 2 opponent. First meeting on 29 Jul." },
+      notes:"New Late Summer opponent. First meeting on 29 Jul." },
     { id:"touch-me", name:"Touch Me", colours:null,
-      notes:"New Season 2 opponent. First meeting on 12 Aug." }
+      notes:"New Late Summer opponent. First meeting on 12 Aug." }
   ],
 
   seasons: [
-    { id:"2026-spring", name:"2026 Spring", status:"finished", finalPosition:7, teamsInLeague:7, points:6,
+    { id:"2026-spring", name:"Early Summer 2026", status:"finished", finalPosition:7, teamsInLeague:7, points:6,
       summary:"A winless league campaign, but the scoring trajectory told the real story: from 0 tries against Dirty Dogs the team went 1, then 2, then 3, and put up 7 against 2nd-placed Try Hard 2 in the final game, losing only 7 to 8." },
-    { id:"2026-summer", name:"2026 Summer", status:"active", finalPosition:null, teamsInLeague:null, points:null,
-      summary:"Season 2 kicks off this week. Fixtures fill in as the schedule is confirmed." }
+    { id:"2026-summer", name:"Late Summer 2026", status:"active", finalPosition:null, teamsInLeague:null, points:null,
+      summary:"The late summer campaign. Results fill in week by week as games are played." }
   ],
 
   fixtures: [
@@ -296,7 +295,7 @@ const TT = {
     { id:"s2-w1", season:"2026-summer", week:1, date:"2026-07-01", time:"19:50", competition:"league",
       opponent:"touchdown-titans", venue:"Clapham Wandsworth, Pitch 2", played:false,
       ttScore:null, oppScore:null, result:null, scorers:null, mvp:null, lineup:null,
-      notes:"Season 2 opener. Third meeting with the Titans." },
+      notes:"Late Summer opener. Third meeting with the Titans." },
     { id:"s2-w2", season:"2026-summer", week:2, date:"2026-07-08", time:"19:50", competition:"league",
       opponent:"wandsworth-wasps", venue:"Clapham Wandsworth, Pitch 2", played:false,
       ttScore:null, oppScore:null, result:null, scorers:null, mvp:null, lineup:null, notes:null },
@@ -509,7 +508,7 @@ function renderHome(){
         <div>
           <div class="vs">Next up</div>
           <div class="opp">${nf.opponent? esc(oppName(nf.opponent)) : 'Opponent TBC'}</div>
-          <div class="meta">${nf.competition==='playoff'?'Play-off · ':''}${fmtDate(nf.date)}${nf.time?' at '+esc(nf.time):''}${nf.venue?' · '+esc(nf.venue):''}${nf.season==='2026-summer'&&nf.week?' · Season 2, week '+nf.week:''}</div>
+          <div class="meta">${nf.competition==='playoff'?'Play-off · ':''}${fmtDate(nf.date)}${nf.time?' at '+esc(nf.time):''}${nf.venue?' · '+esc(nf.venue):''}${nf.week?' · Week '+nf.week:''}</div>
         </div>
         ${nf.opponent? `<a class="cta" href="#opponent/${nf.opponent}">View head-to-head &rarr;</a>`
                      : `<span class="cta muted">Tell Claude the date &amp; opponent to fill this in</span>`}
@@ -677,7 +676,7 @@ function renderPlayoffs(){
     <p class="section-s">Knockout re-seeding after the regular season.</p>
     <div class="bracket">${ties}</div>
     <div class="card mt">
-      <h3>How Season 1 shook out</h3>
+      <h3>How the Early Summer season shook out</h3>
       <p class="muted" style="margin:0;font-size:13.5px">Touch This came last in the league but was guaranteed to finish above Wandsworth Wasps: Wasps lost their semi-final heavily to Touchdown Titans (a 150 to 2 table blunder) and were locked into 7th overall. On 17 June TT met Touchdown Titans &mdash; their very first opponent of the season &mdash; in the 5th-place play-off, with a win meaning 5th and a loss meaning 6th.</p>
     </div>`;
 }
@@ -727,7 +726,7 @@ function renderOpponent(id){
       <div class="wm">${crestSVG()}</div>
       <p class="lead">Next meeting</p>
       <p class="big">${fmtDate(h.upcoming[0].date)}${h.upcoming[0].time?' · '+esc(h.upcoming[0].time):''}</p>
-      <p class="story">${h.upcoming[0].competition==='playoff'?'Play-off. ':''}Season ${h.upcoming[0].season==='2026-summer'?'2':'1'}, week ${h.upcoming[0].week||'&ndash;'}${h.upcoming[0].venue?' · '+esc(h.upcoming[0].venue):''}.</p>
+      <p class="story">${h.upcoming[0].competition==='playoff'?'Play-off. ':''}${esc(season(h.upcoming[0].season).name)}${h.upcoming[0].week?', week '+h.upcoming[0].week:''}${h.upcoming[0].venue?' · '+esc(h.upcoming[0].venue):''}.</p>
     </div>` : '';
 
   host.innerHTML = `
