@@ -452,6 +452,7 @@ const TT = {
 
   // Squad by season: co-captains + core; anyone else who turns out is a ringer. Attendance is read from each fixture's `lineup`.
   squads: {
+    "2026-spring": { captains:["harit","gayatri"], core:["ella","franny","sarah","max","helena","sam","robert","bex"] },
     "2026-summer": { captains:["harit","gayatri"], core:["robert","ella","sam","franny","max","sarah","jas","nicole"] }
   },
 
@@ -1195,17 +1196,17 @@ function renderPlayers(){
       <div class="pl-row">
         <div class="pl-av">${esc(firstName(id).slice(0,1).toUpperCase())}</div>
         <div style="flex:1;min-width:0"><span class="pl-name">${esc(firstName(id))}</span>${flagHTML(id)}</div>
-        <span>${dots(id)}</span>
+        ${games.length?`<span>${dots(id)}</span>
         <span class="pl-count">${apps[id]||0}/${games.length}</span>
-        ${games.length && (apps[id]||0)===games.length ? flame : '<span style="width:16px;flex:none"></span>'}
+        ${(apps[id]||0)===games.length ? flame : '<span style="width:16px;flex:none"></span>'}`:''}
       </div>`;
     const grp = (label, ids) => ids.length ? `<div class="pl-ghead">${label}</div>`+ids.map(row).join('') : '';
     attHTML = `
       <h2 class="section-t">Attendance</h2>
-      <p class="section-s">${games.length} game${games.length===1?'':'s'} logged in ${esc(seasonName)}. A filled dot is a game played; the flame marks perfect attendance.</p>
+      <p class="section-s">${games.length?`${games.length} game${games.length===1?'':'s'} logged in ${esc(seasonName)}. A filled dot is a game played; the flame marks perfect attendance.`:`The ${esc(seasonName)} register is ready. Attendance fills in as each week's list is logged.`}</p>
       <div class="card pl-rows">
         ${grp('Co-captains', squad.captains||[])}
-        ${grp('Core team', byApps(squad.core||[]))}
+        ${grp('Core '+esc(seasonName), byApps(squad.core||[]))}
         ${grp('Ringers', byApps(ringers))}
       </div>`;
   }
