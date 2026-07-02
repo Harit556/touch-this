@@ -136,9 +136,24 @@
   .bar-fill{height:100%;border-radius:7px;background:linear-gradient(90deg,var(--accent),var(--accent-soft));
     min-width:3px;transition:width .3s ease}
   .bar-row .val{width:38px;flex:none;text-align:right;font-variant-numeric:tabular-nums;font-size:13px;color:var(--muted)}
-  tr.att-group td{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700;background:var(--panel-2);padding:7px 13px}
-  .att-dot{display:inline-block;width:11px;height:11px;border-radius:50%;background:var(--win);vertical-align:middle}
-  .att-dot.off{background:transparent;border:1.5px solid var(--line)}
+  .att-dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--win);vertical-align:middle;margin-right:3px}
+  .att-dot.off{background:transparent;border:1.5px solid color-mix(in srgb,var(--muted) 45%,var(--line));width:9px;height:9px}
+  .card.pl-rows{padding:4px 16px 6px}
+  .pl-row{display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .pl-row:last-child{border-bottom:none}
+  .pl-av{width:32px;height:32px;border-radius:50%;background:color-mix(in srgb,var(--accent) 10%,var(--panel));color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;flex:none}
+  .pl-av-gold{background:color-mix(in srgb,var(--draw) 16%,var(--panel));color:color-mix(in srgb,var(--draw) 75%,var(--ink))}
+  .pl-name{font-size:14px;font-weight:550;color:var(--ink)}
+  .pl-flag{font-size:13.5px;margin-left:6px}
+  .pl-sub{font-size:12px;color:var(--muted)}
+  .pl-count{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;width:34px;text-align:right;flex:none}
+  .pl-ghead{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700;padding:12px 0 3px}
+  .pl-flame{width:16px;height:16px;flex:none;color:var(--draw)}
+  .mvp-row{padding:11px 0;border-bottom:1px solid var(--line)}
+  .mvp-row:last-child{border-bottom:none}
+  .mvp-why{font-size:13.5px;font-style:italic;color:var(--ink);margin:5px 0 0 43px;line-height:1.45}
+  .thin .bar-track{height:7px;border-radius:4px}
+  .thin .bar-fill{border-radius:4px}
 
   /* Roster */
   .roster{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
@@ -347,7 +362,7 @@ const TT = {
   players: [
     { id:"gayatri",  name:"Gayatri",           nickname:"G",            type:"core",    apps:7, appsExact:true,  role:"Co-captain. Founded the team, paid the league fee, designed the kit. Ever-present, all 7 games." },
     { id:"harit",    name:"Harit",             nickname:null,           type:"core",    apps:7, appsExact:true,  role:"Co-captain. Ran scouting, tactics and the match reports. Ever-present, all 7 games." },
-    { id:"ella",     name:"Ella",              nickname:"El Capitan",   type:"core",    apps:5, appsExact:true,  role:"Player. Guested for the Wasps in Match 5, which does not count as a TT game." },
+    { id:"ella",     name:"Ella",              nickname:"El Capitan",   type:"core",    apps:5, appsExact:true,  flag:"🇳🇿", role:"Player. Guested for the Wasps in Match 5, which does not count as a TT game." },
     { id:"franny",   name:"Francisco",         nickname:"Fran", first:"Fran", type:"core",    apps:3, appsExact:false, role:"Player. Top try scorer of the season." },
     { id:"sarah",    name:"Sarah",             nickname:null,           type:"core",    apps:4, appsExact:false, role:"Player. G's flatmate." },
     { id:"max",      name:"Max Gutsche",       nickname:null,           type:"core",    apps:5, appsExact:true,  role:"Player. Missed Match 1, and Match 5 for a work event." },
@@ -529,7 +544,7 @@ const TT = {
     { id:"s1-po", season:"2026-spring", week:null, date:"2026-06-24", time:"19:50", competition:"playoff",
       playoffRound:"5th/6th place", opponent:"touchdown-titans", venue:HOME_VENUE, played:true,
       ttScore:3, oppScore:7, result:"L", scorers:[{player:"robert",tries:2},{player:"gayatri",tries:1}], unattributed:0,
-      mvp:{player:"robert",award:"MVP"}, conditions:"37 degrees, very hot.",
+      mvp:{player:"robert",award:"MVP",reason:"Scored twice on his debut"}, conditions:"37 degrees, very hot.",
       highlights:["Full circle rematch of the opening game against the same Titans, ending on the same scoreline.","Robert scored on his first ever game and shouted at the referee.","Ella was back on the correct team and got slammed to the floor.","Sam repeatedly bailed Harit out.","Henry threw the ball into touch three times.","Max and Gayatri could not finish breaks because nobody supported the run."],
       notes:"5th place play-off. Robert scored twice on debut and Gayatri got the third. A win meant 5th, the loss meant 6th. Originally set for 17 Jun but cancelled, no referee." },
 
@@ -538,7 +553,7 @@ const TT = {
       opponent:"touchdown-titans", venue:HOME_VENUE, played:true,
       ttScore:1, oppScore:6, result:"L",
       scorers:[{player:"franny",tries:1}], unattributed:0,
-      mvp:{player:"nicole",award:"MVP"}, conditions:null,
+      mvp:{player:"nicole",award:"MVP",reason:"A fantastic first game"}, conditions:null,
       lineup:["harit","nicole","harry","sam","franny","ella","sarah","marian","morgan"],
       highlights:["A blonde opponent kept branding Francisco a \"LITTLE MONKEY\" 🐵.","Fran scored Touch This's only try, with the last ball of the game.","Harit lined up two interceptions again and dropped both.","Four new players on the pitch at one time.","Ella ran a defensive masterclass on the same blonde opponent.","Harry drew first blood with a knee scrape."],
       notes:"Season 2 opener, lost 6 to 1 to the Titans at the third meeting. Nicole Hopper took MVP on debut." },
@@ -1154,7 +1169,7 @@ function appsChart(){
 function renderPlayers(){
   const host=$('[data-view="players"]');
   const sid = playersScope;
-  const scorers=tallyScorers(sid), mvps=tallyMvp(sid), unatt=totalUnattributed(sid);
+  const scorers=tallyScorers(sid), unatt=totalUnattributed(sid);
   const squad = (TT.squads && TT.squads[sid]) || null;
   const seasonName = sid==='all' ? 'All seasons' : (season(sid)?.name || sid);
   const toggle = `<div class="seg players-seg" role="tablist" aria-label="Season" style="margin-bottom:16px">`
@@ -1162,49 +1177,62 @@ function renderPlayers(){
       .map(([id,lab])=>`<button data-scope="${id}"${id===sid?' class="active"':''}>${esc(lab)}</button>`).join('')
     + `</div>`;
 
-  let body='';
+  const flagHTML = id => { const p=player(id); return p&&p.flag ? `<span class="pl-flag">${p.flag}</span>` : ''; };
+  const nameLabel = i => firstName(i.id) + (player(i.id)?.flag ? ' '+player(i.id).flag : '');
+
+  // attendance (only for a season with a defined squad and recorded lineups)
+  let attHTML='';
   if(squad){
-    // attendance register: one row per player, one dot column per game with a recorded lineup
     const games = TT.fixtures.filter(f=>inScope(f,sid) && f.played && Array.isArray(f.lineup))
       .sort((a,b)=>(a.date||'')<(b.date||'')?-1:1);
     const apps={}; games.forEach(f=>f.lineup.forEach(pid=>apps[pid]=(apps[pid]||0)+1));
-    const tries={}; scorers.forEach(s=>tries[s.id]=s.n);
-    const awards={}; mvps.forEach(m=>awards[m.id]=m.n);
     const roster = new Set([...(squad.captains||[]), ...(squad.core||[])]);
     const ringers = Object.keys(apps).filter(id=>!roster.has(id));
     const byApps = ids => ids.slice().sort((a,b)=>(apps[b]||0)-(apps[a]||0));
-    const cols = games.length + 4;
-    const num = n => n ? n : '<span class="muted">0</span>';
-    const wkHead = f => `<th class="num" title="${esc(fmtDate(f.date))} vs ${esc(f.opponent?oppName(f.opponent):'TBC')}">${f.week?'W'+f.week:'PO'}</th>`;
+    const flame = `<svg class="pl-flame" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-label="Perfect attendance"><path d="M12 12c2-2.96 0-7-1-8 0 3.038-1.773 4.741-3 6-1.226 1.26-2 3.24-2 5a6 6 0 1 0 12 0c0-1.532-1.056-3.94-2-5-1.786 3-2.791 3-4 2z"/></svg>`;
+    const dots = id => games.map(f=>`<span class="att-dot${f.lineup.includes(id)?'':' off'}" title="${esc(fmtDate(f.date))} vs ${esc(f.opponent?oppName(f.opponent):'TBC')}"></span>`).join('');
     const row = id => `
-      <tr>
-        <td>${esc(firstName(id))}</td>
-        ${games.map(f=>`<td class="num"><span class="att-dot${f.lineup.includes(id)?'':' off'}"></span></td>`).join('')}
-        <td class="num">${num(apps[id]||0)}</td><td class="num">${num(tries[id]||0)}</td><td class="num">${num(awards[id]||0)}</td>
-      </tr>`;
-    const grp = (label, ids) => ids.length ? `<tr class="att-group"><td colspan="${cols}">${label}</td></tr>`+ids.map(row).join('') : '';
-    body = `
-      <h2 class="section-t">Squad and attendance</h2>
-      <p class="section-s">One column per game, a filled dot means played. ${games.length} game${games.length===1?'':'s'} logged in ${esc(seasonName)}.</p>
-      <div class="tablewrap"><table>
-        <thead><tr><th>Player</th>${games.map(wkHead).join('')}<th class="num">Played</th><th class="num">Tries</th><th class="num">MVP</th></tr></thead>
-        <tbody>
-          ${grp('Co-captains', squad.captains||[])}
-          ${grp('Core team', byApps(squad.core||[]))}
-          ${grp('Ringers', byApps(ringers))}
-        </tbody>
-      </table></div>
-      ${unatt?`<p class="muted" style="margin:10px 2px 0;font-size:12.5px">Plus ${unatt} ${unatt===1?'try':'tries'} not attributed to a named player.</p>`:''}`;
-  } else {
-    body = `
-      <h2 class="section-t">Leaderboards</h2>
-      <p class="section-s">${esc(seasonName)}. One try equals one point in this league, so tries are the scoring stat.</p>
-      <div class="grid g2">
-        <div class="card"><h3>Top try scorers</h3>${barChart(scorers,i=>firstName(i.id),'No try scorers logged yet.')}
-          ${unatt?`<p class="muted" style="margin:11px 0 0;font-size:12.5px">Plus ${unatt} ${unatt===1?'try':'tries'} scored but never attributed to a named player.</p>`:''}</div>
-        <div class="card"><h3>MVP awards</h3>${barChart(mvps,i=>firstName(i.id),'No MVPs logged yet.')}</div>
+      <div class="pl-row">
+        <div class="pl-av">${esc(firstName(id).slice(0,1).toUpperCase())}</div>
+        <div style="flex:1;min-width:0"><span class="pl-name">${esc(firstName(id))}</span>${flagHTML(id)}</div>
+        <span>${dots(id)}</span>
+        <span class="pl-count">${apps[id]||0}/${games.length}</span>
+        ${games.length && (apps[id]||0)===games.length ? flame : '<span style="width:16px;flex:none"></span>'}
+      </div>`;
+    const grp = (label, ids) => ids.length ? `<div class="pl-ghead">${label}</div>`+ids.map(row).join('') : '';
+    attHTML = `
+      <h2 class="section-t">Attendance</h2>
+      <p class="section-s">${games.length} game${games.length===1?'':'s'} logged in ${esc(seasonName)}. A filled dot is a game played; the flame marks perfect attendance.</p>
+      <div class="card pl-rows">
+        ${grp('Co-captains', squad.captains||[])}
+        ${grp('Core team', byApps(squad.core||[]))}
+        ${grp('Ringers', byApps(ringers))}
       </div>`;
   }
+
+  // MVP awards: one row per award, newest first, with the citation
+  const mvpGames = TT.fixtures.filter(f=>inScope(f,sid) && f.played && f.mvp && f.mvp.player)
+    .sort((a,b)=>(a.date||'')<(b.date||'')?1:-1);
+  const mvpWhen = f => `${sid==='all'?esc(season(f.season)?.name.replace(/\s*20\d\d/,'')||'')+' · ':''}${f.week?'Week '+f.week:(f.competition==='playoff'?'Play-off':fmtDate(f.date))}`;
+  const mvpRow = f => `
+    <div class="mvp-row">
+      <div style="display:flex;align-items:center;gap:11px">
+        <div class="pl-av pl-av-gold">${esc(firstName(f.mvp.player).slice(0,1).toUpperCase())}</div>
+        <div style="flex:1;min-width:0"><span class="pl-name">${esc(firstName(f.mvp.player))}</span>${flagHTML(f.mvp.player)}</div>
+        <span class="pl-sub">${mvpWhen(f)}${f.opponent?' · vs '+esc(oppName(f.opponent)):''}</span>
+      </div>
+      ${f.mvp.reason?`<p class="mvp-why">&ldquo;${esc(f.mvp.reason)}&rdquo;</p>`:''}
+    </div>`;
+
+  const body = `
+    ${attHTML}
+    <h2 class="section-t">Tries and MVPs</h2>
+    <p class="section-s">${esc(seasonName)}. One try equals one point in this league, so tries are the scoring stat.</p>
+    <div class="grid g2">
+      <div class="card thin"><h3>Top try scorers</h3>${barChart(scorers,nameLabel,'No try scorers logged yet.')}
+        ${unatt?`<p class="muted" style="margin:11px 0 0;font-size:12.5px">Plus ${unatt} ${unatt===1?'try':'tries'} scored but never attributed to a named player.</p>`:''}</div>
+      <div class="card pl-rows"><h3 style="padding-top:10px">MVP awards</h3>${mvpGames.length?mvpGames.map(mvpRow).join(''):'<div class="empty">No MVPs logged yet.</div>'}</div>
+    </div>`;
   host.innerHTML = toggle + body;
   $$('.players-seg button',host).forEach(b=>b.addEventListener('click',()=>{ playersScope=b.dataset.scope; renderPlayers(); }));
 }
