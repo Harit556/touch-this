@@ -1223,14 +1223,14 @@ function renderPlayers(){
     </div>`;
 
   const body = `
-    ${attHTML}
     <h2 class="section-t">Tries and MVPs</h2>
     <p class="section-s">${esc(seasonName)}. One try equals one point in this league, so tries are the scoring stat.</p>
     <div class="grid g2">
       <div class="card thin"><h3>Top try scorers</h3>${barChart(scorers,nameLabel,'No try scorers logged yet.')}
         ${unatt?`<p class="muted" style="margin:11px 0 0;font-size:12.5px">Plus ${unatt} ${unatt===1?'try':'tries'} scored but never attributed to a named player.</p>`:''}</div>
       <div class="card pl-rows"><h3 style="padding-top:10px">MVP awards</h3>${mvpGames.length?mvpGames.map(mvpRow).join(''):'<div class="empty">No MVPs logged yet.</div>'}</div>
-    </div>`;
+    </div>
+    ${attHTML}`;
   host.innerHTML = toggle + body;
   $$('.players-seg button',host).forEach(b=>b.addEventListener('click',()=>{ playersScope=b.dataset.scope; renderPlayers(); }));
 }
