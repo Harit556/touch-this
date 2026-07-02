@@ -453,7 +453,7 @@ const TT = {
 
   // Squad by season: co-captains + core; anyone else who turns out is a ringer. Attendance is read from each fixture's `lineup`.
   squads: {
-    "2026-spring": { captains:["harit","gayatri"], core:["ella","franny","sarah","max","helena","sam","robert","bex"] },
+    "2026-spring": { captains:["harit","gayatri"], core:["helena","ella","sarah","sam","franny","max","bex"] },
     "2026-summer": { captains:["harit","gayatri"], core:["robert","ella","sam","franny","max","sarah","jas","nicole"] }
   },
 
@@ -1161,7 +1161,16 @@ function renderPlayers(){
   const host=$('[data-view="players"]');
   const sid = playersScope;
   const scorers=tallyScorers(sid), unatt=totalUnattributed(sid);
-  const squad = (TT.squads && TT.squads[sid]) || null;
+  let squad = (TT.squads && TT.squads[sid]) || null;
+  if(!squad && sid==='all' && TT.squads){
+    // merged squad across every season: captain or core anywhere counts as captain or core here
+    const caps=[], core=[];
+    Object.values(TT.squads).forEach(sq=>{
+      (sq.captains||[]).forEach(id=>{ if(!caps.includes(id)) caps.push(id); });
+      (sq.core||[]).forEach(id=>{ if(!core.includes(id)) core.push(id); });
+    });
+    squad = { captains:caps, core:core.filter(id=>!caps.includes(id)) };
+  }
   const seasonName = sid==='all' ? 'All seasons' : (season(sid)?.name || sid);
   const toggle = `<div class="seg players-seg" role="tablist" aria-label="Season" style="margin-bottom:16px">`
     + [...TT.seasons.map(s=>[s.id, s.name.replace(/\s*20\d\d/,'')]), ['all','All seasons']]
@@ -1191,10 +1200,10 @@ function renderPlayers(){
     const grp = (label, ids) => ids.length ? `<div class="pl-ghead">${label}</div>`+ids.map(row).join('') : '';
     attHTML = `
       <h2 class="section-t">Attendance</h2>
-      <p class="section-s">${games.length?`${games.length} game${games.length===1?'':'s'} logged in ${esc(seasonName)}. A filled dot is a game played.`:`The ${esc(seasonName)} register is ready. Attendance fills in as each week's list is logged.`}</p>
+      <p class="section-s">${games.length?`${games.length} game${games.length===1?'':'s'} logged ${sid==='all'?'across all seasons':'in '+esc(seasonName)}. A filled dot is a game played.`:`The ${esc(seasonName)} register is ready. Attendance fills in as each week's list is logged.`}</p>
       <div class="card pl-rows">
         ${grp('Co-captains', squad.captains||[])}
-        ${grp('Core '+esc(seasonName), byApps(squad.core||[]))}
+        ${grp(sid==='all'?'Core team':'Core '+esc(seasonName), byApps(squad.core||[]))}
         ${grp('Ringers', byApps(ringers))}
       </div>`;
   }
