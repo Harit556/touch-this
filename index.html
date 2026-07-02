@@ -312,8 +312,7 @@
       <button data-nav="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg><span>Overview</span></button>
       <button data-nav="fixtures"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg><span>Fixtures</span></button>
       <button data-nav="players"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Players</span></button>
-      <button data-nav="table"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="8" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="20" y2="12"/><line x1="8" y1="18" x2="20" y2="18"/><path d="M4 6h.01"/><path d="M4 12h.01"/><path d="M4 18h.01"/></svg><span>Table</span></button>
-      <button data-nav="playoffs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg><span>Play-offs</span></button>
+      <button data-nav="table"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="8" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="20" y2="12"/><line x1="8" y1="18" x2="20" y2="18"/><path d="M4 6h.01"/><path d="M4 12h.01"/><path d="M4 18h.01"/></svg><span>Standings</span></button>
       <button data-nav="stats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg><span>Stats</span></button>
     </div>
   </nav>
@@ -322,7 +321,6 @@
     <section data-view="home"></section>
     <section data-view="fixtures" hidden></section>
     <section data-view="table" hidden></section>
-    <section data-view="playoffs" hidden></section>
     <section data-view="players" hidden></section>
     <section data-view="stats" hidden></section>
     <section data-view="opponent" hidden></section>
@@ -355,7 +353,7 @@ const TT = {
     name: "Touch This", short: "TT", motto: "Tango ergo sum",
     league: "GO Mammoth (London) — mixed 6-a-side",
     rules: { onPitch:6, touches:6, halves:2, halfMins:17, minFemaleOnPitch:2, kicking:false,
-             points:{ win:3, loss:1, bye:0 } }
+             points:{ win:3, draw:2, loss:1, bye:0 } }
   },
 
   players: [
@@ -658,7 +656,7 @@ function teamRecord(sid){
     if(f.ttScore!=null) tf+=f.ttScore; else tfU=true;
     if(f.oppScore!=null) ta+=f.oppScore; else taU=true;
   });
-  const pts = w*TT.team.rules.points.win + l*TT.team.rules.points.loss;
+  const pts = w*TT.team.rules.points.win + d*(TT.team.rules.points.draw||0) + l*TT.team.rules.points.loss;
   return { played:fx.length, w,l,d, tf,ta, tfU,taU, pts, diff:tf-ta };
 }
 function bestPerf(sid){
@@ -800,7 +798,8 @@ function h2hVerdict(oppId){
   let rec;
   if(h.w===n) rec = n===1?'Beat them last time':(n===2?'Won both meetings':`Won all ${n}`);
   else if(h.l===n) rec = n===1?'Lost the only meeting':(n===2?'Lost both meetings':`Lost all ${n}`);
-  else rec = `${h.w} win${h.w===1?'':'s'}, ${h.l} loss${h.l===1?'':'es'} in ${n} meetings`;
+  else if(h.d===n) rec = n===1?'Drew the only meeting':(n===2?'Drew both meetings':`Drew all ${n}`);
+  else rec = `${h.w} win${h.w===1?'':'s'}, ${h.d>0?`${h.d} draw${h.d===1?'':'s'}, `:''}${h.l} loss${h.l===1?'':'es'} in ${n} meetings`;
   const scores=h.played.filter(f=>f.ttScore!=null&&f.oppScore!=null).map(f=>f.ttScore+'-'+f.oppScore);
   let sc='';
   if(scores.length && scores.every(x=>x===scores[0])) sc=`, ${h.played[0].ttScore} to ${h.played[0].oppScore} each`;
@@ -988,7 +987,7 @@ function computeStandings(sid){
     });
   });
   const rows=Object.values(rec);
-  rows.forEach(r=>{ r.pts=r.w*TT.team.rules.points.win + r.l*TT.team.rules.points.loss; });
+  rows.forEach(r=>{ r.pts=r.w*TT.team.rules.points.win + r.d*(TT.team.rules.points.draw||0) + r.l*TT.team.rules.points.loss; });
   rows.sort((a,b)=> b.pts-a.pts || (b.tf-b.ta)-(a.tf-a.ta) || b.tf-a.tf || a.team.localeCompare(b.team));
   rows.forEach((r,i)=>r.pos=i+1);
   return rows;
@@ -1023,7 +1022,7 @@ function renderTable(){
       <tr class="${r.tt?'hl':''}">
         <td class="num">${finished ? (r.pos||i+1) : (anyPlayed ? r.pos : '–')}</td>
         <td>${r.tt?`<strong>${esc(r.team)}</strong>`:esc(r.team)}</td>
-        <td class="num">${r.p}</td><td class="num">${r.w}</td><td class="num">${r.l}</td>
+        <td class="num">${r.p}</td><td class="num">${r.w}</td><td class="num">${r.d||0}</td><td class="num">${r.l}</td>
         <td class="num">${r.tf}</td><td class="num">${r.ta}</td>
         <td class="num">${(r.tf-r.ta>0?'+':'')+(r.tf-r.ta)}</td>
         <td class="num"><strong>${r.pts}</strong></td>
@@ -1038,10 +1037,11 @@ function renderTable(){
       <h2 class="section-t">League table &mdash; ${esc(s.name)}</h2>
       <p class="section-s">${caption}</p>
       <div class="tablewrap"><table>
-        <thead><tr><th class="num">Pos</th><th>Team</th><th class="num">P</th><th class="num">W</th><th class="num">L</th><th class="num">TF</th><th class="num">TA</th><th class="num">Diff</th><th class="num">Pts</th></tr></thead>
+        <thead><tr><th class="num">Pos</th><th>Team</th><th class="num">P</th><th class="num">W</th><th class="num">D</th><th class="num">L</th><th class="num">TF</th><th class="num">TA</th><th class="num">Diff</th><th class="num">Pts</th></tr></thead>
         <tbody>${rows}</tbody>
       </table></div>
-      <p class="section-s" style="margin-top:12px">Points: ${TT.team.rules.points.win} for a win, ${TT.team.rules.points.loss} for a loss, ${TT.team.rules.points.bye} for a bye. One try equals one point in this league, so a team's tries are its match score.</p>`;
+      <p class="section-s" style="margin-top:12px">Points: ${TT.team.rules.points.win} for a win, ${TT.team.rules.points.draw} for a draw, ${TT.team.rules.points.loss} for a loss, ${TT.team.rules.points.bye} for a bye. One try equals one point in this league, so a team's tries are its match score.</p>
+      <div id="po-embed"></div>`;
     wireSeasonToggle(host);
     return;
   }
@@ -1051,20 +1051,22 @@ function renderTable(){
     <h2 class="section-t">League table &mdash; ${esc(s?s.name:'')}</h2>
     <p class="section-s">${s&&s.status==='active'?'Season in progress. The full table appears once results are in; the running Touch This row is shown below.':'Standings build up as games are played.'}</p>
     <div class="tablewrap"><table>
-      <thead><tr><th class="num">Pos</th><th>Team</th><th class="num">P</th><th class="num">W</th><th class="num">L</th><th class="num">D</th><th class="num">TF</th><th class="num">TA</th><th class="num">Diff</th><th class="num">Pts</th></tr></thead>
+      <thead><tr><th class="num">Pos</th><th>Team</th><th class="num">P</th><th class="num">W</th><th class="num">D</th><th class="num">L</th><th class="num">TF</th><th class="num">TA</th><th class="num">Diff</th><th class="num">Pts</th></tr></thead>
       <tbody><tr class="hl">
         <td class="num">${s&&s.finalPosition?s.finalPosition:'–'}</td>
         <td><strong>Touch This</strong></td>
-        <td class="num">${rec.played}</td><td class="num">${rec.w}</td><td class="num">${rec.l}</td><td class="num">${rec.d}</td>
+        <td class="num">${rec.played}</td><td class="num">${rec.w}</td><td class="num">${rec.d}</td><td class="num">${rec.l}</td>
         <td class="num">${withUnknown(rec.tf,rec.tfU)}</td><td class="num">${withUnknown(rec.ta,rec.taU)}</td>
         <td class="num">${(rec.diff>0?'+':'')+rec.diff}</td><td class="num"><strong>${rec.pts}</strong></td>
       </tr></tbody>
-    </table></div>`;
+    </table></div>
+    <div id="po-embed"></div>`;
   wireSeasonToggle(host);
 }
 
 function renderPlayoffs(){
-  const host=$('[data-view="playoffs"]');
+  // renders into the Standings tab, below the league table
+  const host=$('#po-embed'); if(!host) return;
   let sid=cur(); if(sid==='all') sid='2026-spring';
   const s=season(sid);
   const games = (TT.playoffs && TT.playoffs[sid]) || [];
@@ -1077,11 +1079,10 @@ function renderPlayoffs(){
       <div class="trow ${fxResult(f)==='L'?'win':''}"><span>${f.opponent?esc(oppName(f.opponent)):'TBC'}</span><span>${f.oppScore==null?'&mdash;':f.oppScore}</span></div>
       ${fxResult(f)?'':'<div class="tlabel" style="text-transform:none;letter-spacing:0">To be played</div>'}
     </div>`).join('') || '<div class="empty">No play-off fixtures for this season yet.</div>';
-    host.innerHTML = `${seasonToggleHTML()}
+    host.innerHTML = `
       <h2 class="section-t">Play-offs &mdash; ${esc(s?s.name:'')}</h2>
       <p class="section-s">Knockout stage after the regular season.</p>
       <div class="bracket-grid">${t}</div>`;
-    wireSeasonToggle(host);
     return;
   }
   // ---- proper knockout bracket ----
@@ -1134,7 +1135,6 @@ function renderPlayoffs(){
     <p class="section-s">Where every team finished after the play-offs.</p>
     <ol class="placings">${placings.map((t,i)=>`<li class="${/Touch This/.test(t)?'tt':''}"><span class="pp">${i+1}</span><span>${esc(t)}</span></li>`).join('')}</ol>` : '';
   host.innerHTML = `
-    ${seasonToggleHTML()}
     <h2 class="section-t">Play-offs &mdash; ${esc(s.name)}</h2>
     <p class="section-s">After six league games, all seven teams were re-seeded by league finish into a knockout: the top four played for the title, the bottom three for final position.</p>
     <div class="card mt">
@@ -1154,7 +1154,6 @@ function renderPlayoffs(){
     <p class="ko-cap">Touchdown Titans beat Wandsworth Wasps in the semi, so the Wasps finished 7th. Touch This, seeded 7th, had a bye into the 5th/6th play-off and faced the Titans &mdash; their opening-day opponent &mdash; losing 3 to 7 to finish 6th, one place above the Wasps.</p>
 
     ${placingsHtml}`;
-  wireSeasonToggle(host);
 }
 
 function renderPlayers(){
@@ -1250,7 +1249,7 @@ function renderStats(){
   const heaviest  = games.slice().sort((a,b)=> (a.ttScore-a.oppScore)-(b.ttScore-b.oppScore))[0];
   const narrowest = games.filter(f=>fxResult(f)==='L').sort((a,b)=> (a.oppScore-a.ttScore)-(b.oppScore-b.ttScore))[0];
   const kpis=[
-    ['Games played',gp],['Record (W-L)',`${w}–${l}`],['Win rate',winPct+'%'],
+    ['Games played',gp],[d>0?'Record (W-D-L)':'Record (W-L)', d>0?`${w}–${d}–${l}`:`${w}–${l}`],['Win rate',winPct+'%'],
     ['Tries scored',tf],['Tries conceded',ta],['Avg margin', gp?((tf-ta)/gp>0?'+':'')+((tf-ta)/gp).toFixed(1):'–']
   ].map(([lab,v])=>`<div class="kpi"><div class="v">${v}</div><div class="l">${lab}</div></div>`).join('');
   const recCard=(title,f,extra)=> f
@@ -1265,7 +1264,7 @@ function renderStats(){
   const mostFaced = Object.entries(oppCounts).sort((a,b)=> b[1]-a[1] || oppName(a[0]).localeCompare(oppName(b[0])))[0];
   const oppsFaced = Object.keys(oppCounts).length;
   const facts=[
-    `<li><strong>${gp}</strong> games played &mdash; ${w} won, ${l} lost</li>`,
+    `<li><strong>${gp}</strong> games played &mdash; ${w} won, ${d>0?d+' drawn, ':''}${l} lost</li>`,
     `<li><strong>${tf}</strong> tries scored, <strong>${ta}</strong> conceded (${(tf-ta)>0?'+':''}${tf-ta} difference)</li>`,
     gp?`<li>Averaged <strong>${(tf/gp).toFixed(1)}</strong> tries scored and <strong>${(ta/gp).toFixed(1)}</strong> conceded per game</li>`:'',
     mostFaced?`<li>Most played opponent: <strong>${esc(oppName(mostFaced[0]))}</strong> (${mostFaced[1]} meeting${mostFaced[1]===1?'':'s'})</li>`:'',
@@ -1313,7 +1312,7 @@ function renderOpponent(id){
   const h=headToHead(id);
   const kpis=[
     ['Played', h.played.length],
-    ['Record (W-L)', `${h.w}–${h.l}`],
+    [h.d>0?'Record (W-D-L)':'Record (W-L)', h.d>0?`${h.w}–${h.d}–${h.l}`:`${h.w}–${h.l}`],
     ['Tries for', withUnknown(h.tf,h.tfU)],
     ['Tries against', withUnknown(h.ta,h.taU)]
   ].map(([l,v])=>`<div class="kpi"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
@@ -1444,10 +1443,11 @@ function renderReport(id){
 }
 
 /* ---------- router + boot ---------- */
-const VIEWS=['home','fixtures','table','playoffs','players','stats'];
+const VIEWS=['home','fixtures','table','players','stats'];
 function renderAll(){ renderHome(); renderFixtures(); renderTable(); renderPlayoffs(); renderPlayers(); renderStats(); }
 function route(){
-  const [view,arg]=(location.hash.replace(/^#/,'')||'home').split('/');
+  let [view,arg]=(location.hash.replace(/^#/,'')||'home').split('/');
+  if(view==='playoffs') view='table'; // legacy hash: play-offs now live on the Standings tab
   const v = (view==='opponent'||view==='report') ? view : (VIEWS.includes(view)?view:'home');
   $$('[data-view]').forEach(sec=>sec.hidden = sec.dataset.view!==v);
   $$('#seg button').forEach(b=>b.classList.toggle('active', b.dataset.nav===v));
