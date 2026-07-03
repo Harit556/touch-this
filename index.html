@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#faf7f2" />
+<meta name="color-scheme" content="light" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M8 4h48v30c0 13-10 22-24 28C18 56 8 47 8 34Z' fill='%236e2334'/%3E%3Cpath d='M11 7h42v27c0 11-9 19-21 25C20 53 11 45 11 34Z' fill='none' stroke='%23f2ead3' stroke-width='2'/%3E%3Ctext x='32' y='39' text-anchor='middle' font-family='Georgia,serif' font-weight='700' font-size='21' fill='%23f2ead3'%3ETT%3C/text%3E%3C/svg%3E" />
 <title>Touch This — Team Dashboard</title>
 <style>
   :root{
@@ -106,6 +109,7 @@
   tbody tr:last-child td{border-bottom:none}
   tbody tr.clickable{cursor:pointer}
   tbody tr.clickable:hover{background:var(--panel-2)}
+  tbody tr:hover:not(.clickable):not(.hl){background:color-mix(in srgb,var(--accent) 3%,transparent)}
   @media (max-width:760px){
     .col-detail,.col-season{display:none}
     .tablewrap th,.tablewrap td{padding:9px 10px}
@@ -287,6 +291,31 @@
   .foot{margin-top:40px;color:var(--muted);font-size:12px;line-height:1.6}
   .foot code{background:var(--panel-2);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:11.5px}
 
+  /* upgrades: zones, charts, player page */
+  button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+  a{-webkit-tap-highlight-color:transparent}
+  tr.zone-top td:first-child{box-shadow:inset 3px 0 0 color-mix(in srgb,var(--win) 65%,transparent)}
+  tr.zone-bottom td:first-child{box-shadow:inset 3px 0 0 color-mix(in srgb,var(--loss) 55%,transparent)}
+  .zone-legend{display:flex;gap:18px;flex-wrap:wrap;margin:10px 2px 0;font-size:12px;color:var(--muted)}
+  .zone-legend .sw,.chart-legend .sw{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+  td.diff-pos{color:var(--win);font-weight:600}
+  td.diff-neg{color:var(--loss)}
+  .gd-hero .wm{position:absolute;right:-28px;bottom:-52px;width:210px;height:230px;opacity:.05;pointer-events:none}
+  .chart svg{display:block;width:100%;height:auto}
+  .chart-x{display:flex;margin-top:6px}
+  .chart-x span{flex:1;text-align:center;font-size:10.5px;color:var(--muted);white-space:nowrap;overflow:hidden}
+  .chart-legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin-top:10px;font-size:12px;color:var(--muted)}
+  .chart-cap{font-size:12px;color:var(--muted);margin:8px 0 0}
+  .player-head{display:flex;align-items:center;gap:16px;margin:6px 0 14px}
+  .player-head .pl-av{width:56px;height:56px;font-size:21px}
+  .player-head .p-name{font-size:22px;font-weight:650;letter-spacing:-.02em;color:var(--ink)}
+  .player-head .p-sub{font-size:13px;color:var(--muted);margin-top:2px}
+  a.pl-row,a.mvp-row{color:inherit;text-decoration:none}
+  a.pl-row{display:flex}
+  a.mvp-row{display:block}
+  a.pl-row:hover,a.mvp-row:hover{background:var(--panel-2);text-decoration:none}
+  .kpis.k4{grid-template-columns:repeat(4,1fr)}
+
   @media (max-width:820px){
     .kpis{grid-template-columns:repeat(3,1fr)}
     .g2,.g3{grid-template-columns:1fr}
@@ -295,7 +324,21 @@
   }
   @media (max-width:480px){
     .kpis{grid-template-columns:repeat(2,1fr)}
+    .kpis.k4{grid-template-columns:repeat(2,1fr)}
     .bar-row .name{width:96px}
+    .wrap{padding:22px 14px 56px}
+    .nav{margin:18px 0 6px}
+    #seg{display:flex;width:100%}
+    #seg button{flex:1;padding:8px 4px;font-size:11px;gap:4px}
+    #seg button svg{width:17px;height:17px}
+    .gd-hero{padding:18px 16px 16px}
+    .att-dot{width:7px;height:7px;margin-right:2px}
+    .att-dot.off{width:6px;height:6px}
+    .pl-count{width:30px;font-size:12px}
+    th.col-tfta,td.col-tfta{display:none}
+    .tablewrap th,.tablewrap td{padding:9px 7px}
+    [data-view="table"] .tablewrap th:nth-child(2),[data-view="table"] .tablewrap td:nth-child(2){white-space:normal;min-width:88px}
+    .chart-x span{font-size:9.5px}
   }
 </style>
 </head>
@@ -326,6 +369,7 @@
     <section data-view="stats" hidden></section>
     <section data-view="opponent" hidden></section>
     <section data-view="report" hidden></section>
+    <section data-view="player" hidden></section>
   </main>
 
 </div>
@@ -602,6 +646,9 @@ const oppName = id => (opp(id)?.name) || 'TBC';
 const playerName = id => { const p=player(id); return p ? p.name : id; };
 const playerShort = id => { const p=player(id); return p ? (p.nickname||p.name.split(' ')[0]) : id; };
 const firstName = id => { const p=player(id); return p ? (p.first || p.name.split(' ')[0]) : id; };
+const flagHTML = id => { const p=player(id); return p&&p.flag ? `<span class="pl-flag">${p.flag}</span>` : ''; };
+const nickHTML = id => { const p=player(id); return p&&p.nickname && p.nickname!==firstName(id) ? ` <span class="pl-nick">&ldquo;${esc(p.nickname)}&rdquo;</span>` : ''; };
+const attDotsHTML = (games, id) => games.map(f=>`<span class="att-dot${f.lineup.includes(id)?'':' off'}" title="${esc(fmtDate(f.date))} vs ${esc(f.opponent?oppName(f.opponent):'TBC')}"></span>`).join('');
 const initials = n => n.split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase();
 const NR = '<span class="muted">Not recorded</span>';
 
@@ -756,6 +803,102 @@ function barChart(items, nameFn, emptyMsg){
     </div>`).join('');
 }
 
+/* ---------- inline SVG charts (no libraries; labels live in an HTML flex row so they stay
+   at CSS pixel size on phones; values in <title> tooltips; fills use CSS variables) ---------- */
+const escapeRegExp = s => s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+const seasonInitials = sid => (season(sid)?.name||String(sid)).split(/\s+/).filter(w=>!/\d/.test(w)).map(w=>w[0]).join('').toUpperCase();
+const gameLabel = (f, withSeason) => (withSeason ? seasonInitials(f.season)+' ' : '') + (f.week ? 'W'+f.week : 'PO');
+function chartGames(scope){
+  return TT.fixtures.filter(f=>f.played && f.competition!=='bye' && f.ttScore!=null && f.oppScore!=null && inScope(f,scope))
+    .sort((a,b)=>(a.date||'')<(b.date||'')?-1:1);
+}
+const chartXRow = labels => `<div class="chart-x">${labels.map(l=>`<span>${esc(l)}</span>`).join('')}</div>`;
+
+function marginChartHTML(scope){
+  const games = chartGames(scope);
+  if(!games.length) return '<div class="empty">No games played in this scope yet.</div>';
+  const withS = scope==='all';
+  const M = Math.max(3, ...games.map(f=>Math.abs(f.ttScore-f.oppScore)));
+  const slot = 560/games.length, bw = Math.min(34, slot*0.55);
+  const bars = games.map((f,i)=>{
+    const m = f.ttScore-f.oppScore, h = Math.round(Math.abs(m)/M*63);
+    const x = (i*slot + (slot-bw)/2).toFixed(1);
+    const word = m>0?'won':m<0?'lost':'drew';
+    const tip = `${gameLabel(f,withS)} vs ${oppName(f.opponent)||'TBC'}: ${word} ${f.ttScore} to ${f.oppScore}`;
+    if(m===0) return `<circle cx="${(i*slot+slot/2).toFixed(1)}" cy="75" r="4" fill="var(--draw)"><title>${esc(tip)}</title></circle>`;
+    return `<rect x="${x}" y="${m>0?75-h:75}" width="${bw.toFixed(1)}" height="${Math.max(h,2)}" rx="2" fill="${m>0?'var(--win)':'var(--loss)'}"><title>${esc(tip)}</title></rect>`;
+  }).join('');
+  return `<svg viewBox="0 0 560 150" role="img" aria-label="Winning margin per game">
+    <line x1="0" y1="75" x2="560" y2="75" stroke="var(--line)" stroke-width="1.5"/>${bars}</svg>
+    ${chartXRow(games.map(f=>gameLabel(f,withS)))}
+    <div class="chart-legend"><span><span class="sw" style="background:var(--win)"></span>Won by</span><span><span class="sw" style="background:var(--loss)"></span>Lost by</span><span><span class="sw" style="background:var(--draw);border-radius:50%"></span>Draw</span></div>`;
+}
+
+function triesChartHTML(scope){
+  const games = chartGames(scope);
+  if(!games.length) return '<div class="empty">No games played in this scope yet.</div>';
+  const withS = scope==='all';
+  const ymax = Math.max(1, ...games.flatMap(f=>[f.ttScore,f.oppScore]));
+  const slot = 560/games.length, bw = Math.min(20, slot*0.35-2);
+  const bars = games.map((f,i)=>{
+    const c = i*slot + slot/2;
+    const mk = (v,x,fill,lab)=>{
+      const h = Math.max(2, Math.round(v/ymax*130));
+      return `<rect x="${x.toFixed(1)}" y="${146-h}" width="${bw.toFixed(1)}" height="${h}" rx="2" fill="${fill}"${v===0?' opacity="0.45"':''}><title>${esc(`${gameLabel(f,withS)} vs ${oppName(f.opponent)||'TBC'}: ${v} ${lab}`)}</title></rect>`;
+    };
+    return mk(f.ttScore, c-bw-1, 'var(--accent)', 'tries scored') + mk(f.oppScore, c+1, 'color-mix(in srgb,var(--muted) 45%,var(--line))', 'conceded');
+  }).join('');
+  return `<svg viewBox="0 0 560 160" role="img" aria-label="Tries for and against per game">
+    <line x1="0" y1="146" x2="560" y2="146" stroke="var(--line)" stroke-width="1.5"/>${bars}</svg>
+    ${chartXRow(games.map(f=>gameLabel(f,withS)))}
+    <div class="chart-legend"><span><span class="sw" style="background:var(--accent)"></span>Tries for</span><span><span class="sw" style="background:color-mix(in srgb,var(--muted) 45%,var(--line))"></span>Tries against</span></div>`;
+}
+
+function positionChartHTML(sid){
+  const rounds = (TT.results&&TT.results[sid])||[];
+  if(!rounds.length) return '';
+  const positions = [];
+  let nTeams = 0;
+  for(let k=1;k<=rounds.length;k++){
+    const rows = computeStandings(sid, k);
+    if(!rows.length) return '';
+    nTeams = rows.length;
+    const tt = rows.find(r=>r.tt);
+    if(!tt) return '';
+    positions.push(tt.pos);
+  }
+  const y = pos => nTeams>1 ? 14 + (pos-1)/(nTeams-1)*122 : 75;
+  const slot = 560/positions.length;
+  const grid = Array.from({length:nTeams},(_,i)=>`<line x1="0" y1="${y(i+1).toFixed(1)}" x2="560" y2="${y(i+1).toFixed(1)}" stroke="var(--line)" stroke-width="0.75"/>`).join('');
+  const pts = positions.map((p,i)=>[( (i+0.5)*slot ).toFixed(1), y(p).toFixed(1), p]);
+  const line = pts.length>1 ? `<polyline points="${pts.map(([x,py])=>x+','+py).join(' ')}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>` : '';
+  const dots = pts.map(([x,py,p],i)=>`<g><circle cx="${x}" cy="${py}" r="9" fill="var(--accent)"><title>${esc(`After week ${i+1}: ${ordinal(p)} of ${nTeams}`)}</title></circle><text x="${x}" y="${(+py+3.5).toFixed(1)}" text-anchor="middle" font-size="10" font-weight="700" fill="var(--cream)" pointer-events="none">${p}</text></g>`).join('');
+  return `<svg viewBox="0 0 560 150" role="img" aria-label="League position after each week">${grid}${line}${dots}</svg>
+    ${chartXRow(positions.map((_,i)=>'W'+(i+1)))}
+    <p class="chart-cap">1st at the top, ${ordinal(nTeams)} at the bottom.</p>`;
+}
+
+function attendanceChartHTML(scope){
+  const games = TT.fixtures.filter(f=>inScope(f,scope) && f.played && Array.isArray(f.lineup))
+    .sort((a,b)=>(a.date||'')<(b.date||'')?-1:1);
+  if(!games.length) return '';
+  const withS = scope==='all';
+  const counts = games.map(f=>f.lineup.length);
+  const ymax = Math.max(...counts);
+  const avg = counts.reduce((s,n)=>s+n,0)/counts.length;
+  const slot = 560/games.length, bw = Math.min(34, slot*0.55);
+  const bars = games.map((f,i)=>{
+    const h = Math.max(2, Math.round(counts[i]/ymax*112));
+    return `<rect x="${(i*slot+(slot-bw)/2).toFixed(1)}" y="${128-h}" width="${bw.toFixed(1)}" height="${h}" rx="2" fill="var(--accent)"><title>${esc(`${gameLabel(f,withS)} vs ${oppName(f.opponent)||'TBC'}: ${counts[i]} played`)}</title></rect>`;
+  }).join('');
+  const avgY = (128 - avg/ymax*112).toFixed(1);
+  return `<svg viewBox="0 0 560 140" role="img" aria-label="Players per game">
+    <line x1="0" y1="128" x2="560" y2="128" stroke="var(--line)" stroke-width="1.5"/>${bars}
+    <line x1="0" y1="${avgY}" x2="560" y2="${avgY}" stroke="var(--draw)" stroke-width="1.5" stroke-dasharray="5 4"><title>${esc(`Average ${avg.toFixed(1)} players`)}</title></line></svg>
+    ${chartXRow(games.map(f=>gameLabel(f,withS)))}
+    <p class="chart-cap">Dashed line shows the average: ${avg.toFixed(1)} players a game.</p>`;
+}
+
 /* ---------- views ---------- */
 let curSeason = '2026-summer';
 const cur = () => curSeason;
@@ -835,6 +978,7 @@ function renderHome(){
 
   const hero = nf ? `
     <section class="gd-hero" aria-label="Next match">
+      <div class="wm" aria-hidden="true">${crestSVG()}</div>
       <div class="gd-herohead">
         <span class="gd-kicker">Next match${nf.week?' &middot; Week '+nf.week:''}${nf.competition==='playoff'?' &middot; Play-off':''}</span>
         <span class="gd-chip">${nf.competition==='playoff'?'Play-off':'League'}</span>
@@ -854,7 +998,7 @@ function renderHome(){
         <a class="gd-btn gd-btn-ghost" href="${calendarHref(nf)}" download="touch-this-${esc(nf.id)}.ics">Add to calendar</a>
       </div>
     </section>` : `
-    <section class="gd-hero" aria-label="Next match"><div class="gd-kicker">Next match</div><p class="gd-nomatch">No upcoming fixtures. The season schedule will appear here.</p></section>`;
+    <section class="gd-hero" aria-label="Next match"><div class="wm" aria-hidden="true">${crestSVG()}</div><div class="gd-kicker">Next match</div><p class="gd-nomatch">No upcoming fixtures. The season schedule will appear here.</p></section>`;
 
   const form = allTimeForm(5);
   const last = lastResultFx();
@@ -975,10 +1119,11 @@ function sortFixtures(rows){
 }
 
 // Live standings computed from the round-by-round results grid.
-function computeStandings(sid){
+function computeStandings(sid, uptoRound){
   const teams=(TT.standings[sid]||[]).map(r=>r.team);
   const rec={}; teams.forEach(t=>rec[t]={team:t,p:0,w:0,l:0,d:0,tf:0,ta:0,tt:/Touch This/.test(t)});
-  ((TT.results&&TT.results[sid])||[]).forEach(rnd=>{
+  const rounds=((TT.results&&TT.results[sid])||[]);
+  (uptoRound==null ? rounds : rounds.slice(0, uptoRound)).forEach(rnd=>{
     (rnd.games||[]).forEach(g=>{
       [[g.a,g.as,g.bs],[g.b,g.bs,g.as]].forEach(([t,gf,ga])=>{
         const r=rec[t]; if(!r) return;
@@ -1019,29 +1164,37 @@ function renderTable(){
       data = computeStandings(sid);
     }
     const anyPlayed = data.some(r=>r.p>0);
-    const rows = data.map((r,i)=>`
-      <tr class="${r.tt?'hl':''}">
+    const zones = data.length===7 && (finished || anyPlayed);
+    const rows = data.map((r,i)=>{
+      const df = r.tf-r.ta;
+      return `
+      <tr class="${r.tt?'hl':''}${zones?(i<4?' zone-top':' zone-bottom'):''}">
         <td class="num">${finished ? (r.pos||i+1) : (anyPlayed ? r.pos : '–')}</td>
         <td>${r.tt?`<strong>${esc(r.team)}</strong>`:esc(r.team)}</td>
         <td class="num">${r.p}</td><td class="num">${r.w}</td><td class="num">${r.d||0}</td><td class="num">${r.l}</td>
-        <td class="num">${r.tf}</td><td class="num">${r.ta}</td>
-        <td class="num">${(r.tf-r.ta>0?'+':'')+(r.tf-r.ta)}</td>
+        <td class="num col-tfta">${r.tf}</td><td class="num col-tfta">${r.ta}</td>
+        <td class="num ${df>0?'diff-pos':df<0?'diff-neg':''}">${(df>0?'+':'')+df}</td>
         <td class="num"><strong>${r.pts}</strong></td>
-      </tr>`).join('');
+      </tr>`;}).join('');
     const caption = finished
       ? `Final regular-season standings. Touch This finished ${ordinal(s.finalPosition)} of ${data.length}${s.finalPlacing?`, then ${ordinal(s.finalPlacing)} overall after the play-offs`:''}.`
       : (anyPlayed
           ? `Live table, computed straight from results and updated the moment each week is logged. ${data.length} teams.`
           : `All ${data.length} teams in the division. The table goes live the moment results start coming in.`);
+    const posChart = anyPlayed ? positionChartHTML(sid) : '';
     host.innerHTML = `
       ${seasonToggleHTML()}
       <h2 class="section-t">League table &mdash; ${esc(s.name)}</h2>
       <p class="section-s">${caption}</p>
       <div class="tablewrap"><table>
-        <thead><tr><th class="num">Pos</th><th>Team</th><th class="num">P</th><th class="num">W</th><th class="num">D</th><th class="num">L</th><th class="num">TF</th><th class="num">TA</th><th class="num">Diff</th><th class="num">Pts</th></tr></thead>
+        <thead><tr><th class="num">Pos</th><th>Team</th><th class="num">P</th><th class="num">W</th><th class="num">D</th><th class="num">L</th><th class="num col-tfta">TF</th><th class="num col-tfta">TA</th><th class="num">Diff</th><th class="num">Pts</th></tr></thead>
         <tbody>${rows}</tbody>
       </table></div>
+      ${zones?`<p class="zone-legend"><span><span class="sw" style="background:color-mix(in srgb,var(--win) 65%,transparent)"></span>Top four play for the title</span><span><span class="sw" style="background:color-mix(in srgb,var(--loss) 55%,transparent)"></span>Bottom three play for placement</span></p>`:''}
       <p class="section-s" style="margin-top:12px">Points: ${TT.team.rules.points.win} for a win, ${TT.team.rules.points.draw} for a draw, ${TT.team.rules.points.loss} for a loss, ${TT.team.rules.points.bye} for a bye. One try equals one point in this league, so a team's tries are its match score.</p>
+      ${posChart?`<h2 class="section-t">Position by week</h2>
+      <p class="section-s">Where Touch This sat in the table after each round.</p>
+      <div class="card chart">${posChart}</div>`:''}
       <div id="po-embed"></div>`;
     wireSeasonToggle(host);
     return;
@@ -1052,12 +1205,12 @@ function renderTable(){
     <h2 class="section-t">League table &mdash; ${esc(s?s.name:'')}</h2>
     <p class="section-s">${s&&s.status==='active'?'Season in progress. The full table appears once results are in; the running Touch This row is shown below.':'Standings build up as games are played.'}</p>
     <div class="tablewrap"><table>
-      <thead><tr><th class="num">Pos</th><th>Team</th><th class="num">P</th><th class="num">W</th><th class="num">D</th><th class="num">L</th><th class="num">TF</th><th class="num">TA</th><th class="num">Diff</th><th class="num">Pts</th></tr></thead>
+      <thead><tr><th class="num">Pos</th><th>Team</th><th class="num">P</th><th class="num">W</th><th class="num">D</th><th class="num">L</th><th class="num col-tfta">TF</th><th class="num col-tfta">TA</th><th class="num">Diff</th><th class="num">Pts</th></tr></thead>
       <tbody><tr class="hl">
         <td class="num">${s&&s.finalPosition?s.finalPosition:'–'}</td>
         <td><strong>Touch This</strong></td>
         <td class="num">${rec.played}</td><td class="num">${rec.w}</td><td class="num">${rec.d}</td><td class="num">${rec.l}</td>
-        <td class="num">${withUnknown(rec.tf,rec.tfU)}</td><td class="num">${withUnknown(rec.ta,rec.taU)}</td>
+        <td class="num col-tfta">${withUnknown(rec.tf,rec.tfU)}</td><td class="num col-tfta">${withUnknown(rec.ta,rec.taU)}</td>
         <td class="num">${(rec.diff>0?'+':'')+rec.diff}</td><td class="num"><strong>${rec.pts}</strong></td>
       </tr></tbody>
     </table></div>
@@ -1177,8 +1330,6 @@ function renderPlayers(){
       .map(([id,lab])=>`<button data-scope="${id}"${id===sid?' class="active"':''}>${esc(lab)}</button>`).join('')
     + `</div>`;
 
-  const flagHTML = id => { const p=player(id); return p&&p.flag ? `<span class="pl-flag">${p.flag}</span>` : ''; };
-  const nickHTML = id => { const p=player(id); return p&&p.nickname && p.nickname!==firstName(id) ? ` <span class="pl-nick">&ldquo;${esc(p.nickname)}&rdquo;</span>` : ''; };
   const nameLabel = i => firstName(i.id) + (player(i.id)?.flag ? ' '+player(i.id).flag : '');
 
   // attendance (only for a season with a defined squad and recorded lineups)
@@ -1190,23 +1341,23 @@ function renderPlayers(){
     const roster = new Set([...(squad.captains||[]), ...(squad.core||[])]);
     const ringers = Object.keys(apps).filter(id=>!roster.has(id));
     const byApps = ids => ids.slice().sort((a,b)=>(apps[b]||0)-(apps[a]||0));
-    const dots = id => games.map(f=>`<span class="att-dot${f.lineup.includes(id)?'':' off'}" title="${esc(fmtDate(f.date))} vs ${esc(f.opponent?oppName(f.opponent):'TBC')}"></span>`).join('');
     const row = id => `
-      <div class="pl-row">
+      <a class="pl-row" href="#player/${esc(id)}">
         <div class="pl-av">${esc(firstName(id).slice(0,1).toUpperCase())}</div>
         <div style="flex:1;min-width:0"><span class="pl-name">${esc(firstName(id))}</span>${nickHTML(id)}${flagHTML(id)}</div>
-        ${games.length?`<span>${dots(id)}</span>
+        ${games.length?`<span>${attDotsHTML(games,id)}</span>
         <span class="pl-count">${apps[id]||0}/${games.length}</span>`:''}
-      </div>`;
+      </a>`;
     const grp = (label, ids) => ids.length ? `<div class="pl-ghead">${label}</div>`+ids.map(row).join('') : '';
     attHTML = `
       <h2 class="section-t">Attendance</h2>
-      <p class="section-s">${games.length?`${games.length} game${games.length===1?'':'s'} logged ${sid==='all'?'across all seasons':'in '+esc(seasonName)}. A filled dot is a game played.`:`The ${esc(seasonName)} register is ready. Attendance fills in as each week's list is logged.`}</p>
+      <p class="section-s">${games.length?`${games.length} game${games.length===1?'':'s'} logged ${sid==='all'?'across all seasons':'in '+esc(seasonName)}. A filled dot is a game played; tap a player for their season.`:`The ${esc(seasonName)} register is ready. Attendance fills in as each week's list is logged.`}</p>
       <div class="card pl-rows">
         ${grp('Co-captains', squad.captains||[])}
         ${grp(sid==='all'?'Core team':'Core '+esc(seasonName), byApps(squad.core||[]))}
         ${grp('Ringers', byApps(ringers))}
-      </div>`;
+      </div>
+      ${games.length?`<div class="card chart" style="margin-top:16px"><h3>Players per game</h3>${attendanceChartHTML(sid)}</div>`:''}`;
   }
 
   // MVP awards: one row per award, newest first, with the citation
@@ -1214,14 +1365,14 @@ function renderPlayers(){
     .sort((a,b)=>(a.date||'')<(b.date||'')?1:-1);
   const mvpWhen = f => `${sid==='all'?esc(season(f.season)?.name.replace(/\s*20\d\d/,'')||'')+' · ':''}${f.week?'Week '+f.week:(f.competition==='playoff'?'Play-off':fmtDate(f.date))}`;
   const mvpRow = f => `
-    <div class="mvp-row">
+    <a class="mvp-row" href="#player/${esc(f.mvp.player)}">
       <div style="display:flex;align-items:center;gap:11px">
         <div class="pl-av pl-av-gold">${esc(firstName(f.mvp.player).slice(0,1).toUpperCase())}</div>
         <div style="flex:1;min-width:0"><span class="pl-name">${esc(firstName(f.mvp.player))}</span>${nickHTML(f.mvp.player)}${flagHTML(f.mvp.player)}</div>
         <span class="pl-sub">${mvpWhen(f)}${f.opponent?' · vs '+esc(oppName(f.opponent)):''}</span>
       </div>
       ${f.mvp.reason?`<p class="mvp-why">&ldquo;${esc(f.mvp.reason)}&rdquo;</p>`:''}
-    </div>`;
+    </a>`;
 
   const body = `
     <h2 class="section-t">Tries and MVPs</h2>
@@ -1280,6 +1431,12 @@ function renderStats(){
     <h2 class="section-t">Club stats${allTime?'':' &mdash; '+esc(scopeSeason?scopeSeason.name:sc)}</h2>
     <p class="section-s">${allTime?'Across every game played so far, both seasons and the play-offs.':`Just ${esc(scopeSeason?scopeSeason.name:sc)}, league and play-offs.`}</p>
     <div class="kpis">${kpis}</div>
+    <h2 class="section-t">Game by game</h2>
+    <p class="section-s">Every played game ${allTime?'across both seasons':'in '+esc(scopeSeason?scopeSeason.name:sc)}, oldest first. Hover a bar for the score.</p>
+    <div class="grid g2">
+      <div class="card chart"><h3>Margin per game</h3>${marginChartHTML(sc)}</div>
+      <div class="card chart"><h3>Tries for and against</h3>${triesChartHTML(sc)}</div>
+    </div>
     <h2 class="section-t">Records</h2>
     <div class="grid g3">
       ${recCard('Best attacking game', bestAttack, bestAttack?bestAttack.ttScore+' tries scored':'')}
@@ -1444,17 +1601,101 @@ function renderReport(id){
     ${f.opponent?`<p style="margin-top:18px"><a href="#opponent/${f.opponent}">Head-to-head vs ${esc(oppNm)} &rarr;</a></p>`:''}`;
 }
 
+function renderPlayer(id){
+  const host=$('[data-view="player"]');
+  const p=player(id);
+  if(!p){ host.innerHTML=`<a class="back" href="#players">&larr; All players</a><div class="empty">Unknown player.</div>`; return; }
+
+  // squad role, derived per season
+  let roleLine;
+  if(Object.values(TT.squads||{}).some(sq=>(sq.captains||[]).includes(id))) roleLine='Co-captain';
+  else{
+    const coreIn=Object.keys(TT.squads||{}).filter(sid=>(TT.squads[sid].core||[]).includes(id))
+      .map(sid=>(season(sid)?.name||sid).replace(/\s*20\d\d/,''));
+    roleLine = coreIn.length ? 'Core team · '+coreIn.join(', ') : 'Ringer';
+  }
+
+  const when = f => `${f.week?'Week '+f.week:(f.competition==='playoff'?'Play-off':fmtDate(f.date))} · ${esc((season(f.season)?.name||'').replace(/\s*20\d\d/,''))}`;
+  const byDate=(a,b)=>(a.date||'')<(b.date||'')?-1:1;
+
+  const playedIn = TT.fixtures.filter(f=>f.played && Array.isArray(f.lineup) && f.lineup.includes(id));
+  const gp = playedIn.length;
+  const triesIn = f => (f.scorers||[]).reduce((t,s)=>{const pid=typeof s==='string'?s:s.player; return pid===id ? t+(typeof s==='string'?1:(s.tries||1)) : t;},0);
+  const scoredIn = TT.fixtures.filter(f=>f.played && triesIn(f)>0).sort(byDate);
+  const tries = scoredIn.reduce((t,f)=>t+triesIn(f),0);
+  const mvps = TT.fixtures.filter(f=>f.played && f.mvp && f.mvp.player===id).sort(byDate).reverse();
+
+  const kpis = [
+    ['Games', gp],
+    ['Tries', tries],
+    ['MVP awards', mvps.length],
+    ['Tries a game', gp ? (tries/gp).toFixed(1) : '0']
+  ].map(([l,v])=>`<div class="kpi"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+
+  const attRows = TT.seasons.map(s=>{
+    const games = TT.fixtures.filter(f=>f.season===s.id && f.played && Array.isArray(f.lineup)).sort(byDate);
+    if(!games.length) return '';
+    const n = games.filter(f=>f.lineup.includes(id)).length;
+    return `<div class="pl-row">
+      <div style="flex:1;min-width:0"><span class="pl-name">${esc(s.name)}</span></div>
+      <span>${attDotsHTML(games,id)}</span>
+      <span class="pl-count">${n}/${games.length}</span>
+    </div>`;
+  }).join('');
+
+  // moments: scan match highlights for mentions. Known limits, accepted: shared
+  // nicknames (Gayatri and Ella both hold "El Capitan") would match both players,
+  // common-word names could false-positive, and notes are not scanned.
+  const names=[...new Set([p.name, p.first, p.name.split(' ')[0], p.nickname, p.id].filter(n=>n&&n.length>2))];
+  const pats = names.map(n=>new RegExp('\\b'+escapeRegExp(n)+'\\b','i'));
+  const moments=[];
+  TT.fixtures.filter(f=>f.played && Array.isArray(f.highlights)).sort(byDate).forEach(f=>{
+    f.highlights.forEach(hl=>{ if(pats.some(rx=>rx.test(hl))) moments.push({f,hl}); });
+  });
+
+  host.innerHTML = `
+    <a class="back" href="#players">&larr; All players</a>
+    <div class="player-head">
+      <div class="pl-av">${esc(firstName(id).slice(0,1).toUpperCase())}</div>
+      <div>
+        <div class="p-name">${esc(firstName(id))}${nickHTML(id)}${flagHTML(id)}</div>
+        <div class="p-sub">${esc(roleLine)}</div>
+      </div>
+    </div>
+    ${p.role?`<p class="section-s" style="max-width:680px;margin-top:0">${esc(p.role)}</p>`:''}
+    <div class="kpis k4" style="margin-top:14px">${kpis}</div>
+    <h2 class="section-t">Attendance</h2>
+    ${attRows?`<div class="card pl-rows">${attRows}</div>`:'<div class="empty">No attendance logged yet.</div>'}
+    ${scoredIn.length?`
+    <h2 class="section-t">Games scored in</h2>
+    <div class="card"><ul class="facts">${scoredIn.map(f=>{
+      const n=triesIn(f);
+      return `<li><a href="#report/${f.id}">${when(f)} vs ${esc(f.opponent?oppName(f.opponent):'TBC')}</a> &mdash; ${n===1?'1 try':n+' tries'}</li>`;
+    }).join('')}</ul></div>`:''}
+    ${mvps.length?`
+    <h2 class="section-t">MVP awards</h2>
+    <div class="card"><ul class="facts">${mvps.map(f=>
+      `<li><a href="#report/${f.id}">${when(f)} vs ${esc(f.opponent?oppName(f.opponent):'TBC')}</a>${f.mvp.reason?` &mdash; <span style="font-style:italic">&ldquo;${esc(f.mvp.reason)}&rdquo;</span>`:''}</li>`
+    ).join('')}</ul></div>`:''}
+    ${moments.length?`
+    <h2 class="section-t">Moments</h2>
+    <div class="card"><ul class="facts">${moments.map(m=>
+      `<li>${esc(m.hl)} <span class="muted">&middot; <a href="#report/${m.f.id}">${when(m.f)}</a></span></li>`
+    ).join('')}</ul></div>`:''}`;
+}
+
 /* ---------- router + boot ---------- */
 const VIEWS=['home','fixtures','table','players','stats'];
 function renderAll(){ renderHome(); renderFixtures(); renderTable(); renderPlayoffs(); renderPlayers(); renderStats(); }
 function route(){
   let [view,arg]=(location.hash.replace(/^#/,'')||'home').split('/');
   if(view==='playoffs') view='table'; // legacy hash: play-offs now live on the Standings tab
-  const v = (view==='opponent'||view==='report') ? view : (VIEWS.includes(view)?view:'home');
+  const v = (view==='opponent'||view==='report'||view==='player') ? view : (VIEWS.includes(view)?view:'home');
   $$('[data-view]').forEach(sec=>sec.hidden = sec.dataset.view!==v);
   $$('#seg button').forEach(b=>b.classList.toggle('active', b.dataset.nav===v));
   if(v==='opponent') renderOpponent(arg);
   if(v==='report') renderReport(arg);
+  if(v==='player') renderPlayer(arg);
   window.scrollTo(0,0);
 }
 
