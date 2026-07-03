@@ -1419,6 +1419,11 @@ function renderStats(){
   games.forEach(f=>{ if(f.opponent) oppCounts[f.opponent]=(oppCounts[f.opponent]||0)+1; });
   const mostFaced = Object.entries(oppCounts).sort((a,b)=> b[1]-a[1] || oppName(a[0]).localeCompare(oppName(b[0])))[0];
   const oppsFaced = Object.keys(oppCounts).length;
+  const appCount={};
+  TT.fixtures.filter(f=>f.played && Array.isArray(f.lineup) && inScope(f,sc)).forEach(f=>f.lineup.forEach(pid=>appCount[pid]=(appCount[pid]||0)+1));
+  const maxApp = Math.max(0, ...Object.values(appCount));
+  const topApp = Object.keys(appCount).filter(id=>appCount[id]===maxApp).map(firstName).sort();
+  const joinNames = a => a.length<=1 ? (a[0]||'') : a.slice(0,-1).join(', ')+' and '+a[a.length-1];
   const facts=[
     `<li><strong>${gp}</strong> games played &mdash; ${w} won, ${d>0?d+' drawn, ':''}${l} lost</li>`,
     `<li><strong>${tf}</strong> tries scored, <strong>${ta}</strong> conceded (${(tf-ta)>0?'+':''}${tf-ta} difference)</li>`,
@@ -1427,6 +1432,7 @@ function renderStats(){
     oppsFaced?`<li><strong>${oppsFaced}</strong> different opponents faced</li>`:'',
     `<li><strong>${scorers.length}</strong> different try scorers, <strong>${mvps.length}</strong> different MVP winners</li>`,
     allTime?`<li><strong>${TT.players.length}</strong> players turned out across the club</li>`:'',
+    maxApp?`<li>Most appearances: <strong>${topApp.length>3?topApp.length+' players':esc(joinNames(topApp))}</strong> (${maxApp} game${maxApp===1?'':'s'}${topApp.length>1?' each':''})</li>`:'',
     `<li>Leading scorer: <strong>${scorers.length?esc(firstName(scorers[0].id))+' ('+scorers[0].n+' tries)':'—'}</strong></li>`
   ].filter(Boolean).join('');
   host.innerHTML = `
