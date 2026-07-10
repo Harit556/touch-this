@@ -1483,6 +1483,34 @@ function teamSeasonResults(name, sid){
   });
   return out;
 }
+// All of a team's completed league games grouped by opponent name, across every season in the results grid.
+function resultsByOpponentAllSeasons(teamName){
+  const map={};
+  Object.keys(TT.results||{}).forEach(sid=>{
+    teamSeasonResults(teamName, sid).forEach(x=>{
+      if(x.bye) return;
+      (map[x.opp]=map[x.opp]||[]).push({sid, date:x.date, gf:x.gf, ga:x.ga, res:x.res});
+    });
+  });
+  return map;
+}
+// The name Touch This is stored under in the results grid (e.g. "Touch This (TT)").
+function ttGridName(){
+  const row=Object.values(TT.standings||{}).flat().find(r=>r.tt);
+  return (row&&row.team) || 'Touch This (TT)';
+}
+// One cell of the common-opponents table: overall record plus each scoreline, most recent first.
+function h2hCellHTML(games){
+  if(!games||!games.length) return '<span class="muted">&mdash;</span>';
+  const g=games.slice().sort((a,b)=>((a.date||'')<(b.date||'')?1:-1));
+  const w=g.filter(x=>x.res==='W').length, d=g.filter(x=>x.res==='D').length, l=g.filter(x=>x.res==='L').length;
+  const rec=d>0?`${w}&ndash;${d}&ndash;${l}`:`${w}&ndash;${l}`;
+  const line=g.map(x=>{
+    const c=x.res==='W'?'var(--win)':x.res==='L'?'var(--loss)':'var(--draw)';
+    return `<span style="color:${c};font-weight:640">${x.res}</span> ${x.gf}&ndash;${x.ga}`;
+  }).join('<span class="muted"> &middot; </span>');
+  return `<div style="font-weight:650">${rec}</div><div class="muted" style="font-size:12px;margin-top:3px;line-height:1.5">${line}</div>`;
+}
 function renderOpponent(id){
   const host=$('[data-view="opponent"]'); const o=opp(id);
   if(!o){ host.innerHTML=`<a class="back" href="#fixtures">&larr; Back</a><div class="empty">Unknown opponent.</div>`; return; }
@@ -1575,6 +1603,63 @@ function renderOpponent(id){
       ${po.length?`<div class="card mt"><h3>Their play-off run</h3><ul class="facts">${po.map(l=>`<li>${l}</li>`).join('')}</ul></div>`:''}`;
   }
 
+  // Their games in the active (in-progress) season — recent form and every result.
+  const TT_GRID = ttGridName();
+  const activeSid = (TT.seasons.find(s=>s.status==='active')||{}).id;
+  let theirSeasonSection='';
+  if(activeSid){
+    const rows = teamSeasonResults(o.name, activeSid);
+    const played = rows.filter(x=>!x.bye);
+    if(played.length){
+      const w=played.filter(x=>x.res==='W').length, d=played.filter(x=>x.res==='D').length, l=played.filter(x=>x.res==='L').length;
+      const tf=played.reduce((s,x)=>s+x.gf,0), ta=played.reduce((s,x)=>s+x.ga,0);
+      const form = played.map(x=>`<span class="chip ${x.res.toLowerCase()}">${x.res}</span>`).join('');
+      const body = rows.map(x=> x.bye
+        ? `<tr><td>${fmtDate(x.date)}</td><td class="muted" colspan="3">Bye week</td></tr>`
+        : `<tr class="${/Touch This/.test(x.opp)?'hl':''}"><td>${fmtDate(x.date)}</td><td>${esc(x.opp)}</td><td class="num">${x.gf}&ndash;${x.ga}</td><td class="num">${resBadge(x.res)}</td></tr>`
+      ).join('');
+      theirSeasonSection=`
+        <h2 class="section-t">Their ${esc(season(activeSid).name)} so far</h2>
+        <p class="section-s">${esc(o.name)}&rsquo;s results this season &mdash; recent form and every game played.</p>
+        <div class="card">
+          <div class="form" style="margin:2px 0 12px">${form}</div>
+          <p class="ko-cap" style="margin:0 0 12px">Played ${played.length} &middot; ${d>0?`${w}&ndash;${d}&ndash;${l}`:`${w}&ndash;${l}`} &middot; ${tf} tries for, ${ta} against.</p>
+          <div class="tablewrap"><table>
+            <thead><tr><th>Date</th><th>Opponent</th><th class="num">Score</th><th class="num">Res</th></tr></thead>
+            <tbody>${body}</tbody>
+          </table></div>
+        </div>`;
+    }
+  }
+
+  // Common opponents — how Touch This has fared against the teams this opponent has played.
+  const theirsByOpp = resultsByOpponentAllSeasons(o.name);
+  const oursByOpp = resultsByOpponentAllSeasons(TT_GRID);
+  const commonNames = Object.keys(theirsByOpp)
+    .filter(n=>!/Touch This/.test(n) && oursByOpp[n])
+    .sort((a,b)=>{
+      const la=theirsByOpp[a].reduce((m,x)=>x.date>m?x.date:m,''), lb=theirsByOpp[b].reduce((m,x)=>x.date>m?x.date:m,'');
+      return la<lb?1:la>lb?-1:a.localeCompare(b);
+    });
+  let commonSection='';
+  if(commonNames.length){
+    const crows=commonNames.map(nm=>`
+      <tr>
+        <td>${esc(nm)}</td>
+        <td>${h2hCellHTML(theirsByOpp[nm])}</td>
+        <td class="cmp-us">${h2hCellHTML(oursByOpp[nm])}</td>
+      </tr>`).join('');
+    commonSection=`
+      <h2 class="section-t">Common opponents</h2>
+      <p class="section-s">How Touch This has fared against the teams ${esc(o.name)} has played &mdash; a like-for-like read across every shared opponent.</p>
+      <div class="card">
+        <div class="tablewrap"><table>
+          <thead><tr><th>Opponent</th><th>${esc(o.name)}</th><th class="cmp-us">Touch This</th></tr></thead>
+          <tbody>${crows}</tbody>
+        </table></div>
+      </div>`;
+  }
+
   host.innerHTML = `
     <a class="back" href="#fixtures">&larr; All fixtures</a>
     <h2 class="section-t">${esc(o.name)}</h2>
@@ -1587,6 +1672,8 @@ function renderOpponent(id){
       <thead><tr><th>Date</th><th>Comp</th><th class="num">Score</th><th class="num">Res</th><th>Try scorers</th><th>MVP</th></tr></thead>
       <tbody>${meetings}</tbody>
     </table></div>
+    ${theirSeasonSection}
+    ${commonSection}
     ${recordSection}`;
 }
 
