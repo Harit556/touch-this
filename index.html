@@ -695,7 +695,7 @@ function scorersText(f){
   if(f.scorers==null && !un) return NR;
   const named = Array.isArray(f.scorers) ? f.scorers.map(s=>{
     const pid=typeof s==='string'?s:s.player, t=typeof s==='string'?1:(s.tries||1);
-    return esc(playerShort(pid))+(t>1?' &times;'+t:'');
+    return esc(firstName(pid))+(t>1?' &times;'+t:'');
   }) : [];
   if(un) named.push('<span class="muted">+'+un+' unattributed</span>');
   return named.length ? named.join(', ') : '<span class="muted">&mdash;</span>';
